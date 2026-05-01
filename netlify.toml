@@ -1,0 +1,15 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Clean URLs: /api/auth → /.netlify/functions/auth, etc.
+[[redirects]]
+  from = "/api/*"
+  to   = "/.netlify/functions/:splat"
+  status = 200
+
+# Catch-all: serve study.html for all routes (SPA)
+[[redirects]]
+  from = "/*"
+  to   = "/study.html"
+  status = 200
