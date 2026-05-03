@@ -1,0 +1,3056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Study">
+  <title>Study</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg: #191919;
+      --bg2: #111111;
+      --card: #242424;
+      --card-hover: #2a2a2a;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e8e8;
+      --subtext: rgba(232,232,232,0.42);
+      --accent: #818CF8;
+      --accent-dim: rgba(129,140,248,0.13);
+      --nav-h: 58px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      color: var(--text);
+      overflow: hidden;
+    }
+    body {
+      background: var(--bg);
+    }
+
+    /* ── APP SHELL ── */
+    #app { height: 100vh; display: flex; flex-direction: column; }
+    #content {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 20px);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── GLASS CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin: 0 16px 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+    }
+    .card-sm { padding: 10px 14px; }
+
+    /* ── NAV (text-only, no emojis) ── */
+    #nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: calc(var(--nav-h) + var(--safe-bottom));
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: flex-start; padding-top: 8px;
+      padding-bottom: var(--safe-bottom); z-index: 200;
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 5px; cursor: pointer; border: none; background: none; padding: 4px 0;
+      transition: opacity 0.15s;
+    }
+    .nav-btn:active { opacity: 0.55; }
+    .nav-label { font-size: 12px; font-weight: 600; color: var(--subtext); transition: color 0.15s; letter-spacing: 0.2px; }
+    .nav-btn.active .nav-label { color: var(--accent); font-weight: 800; }
+    .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: 0; transition: opacity 0.15s; }
+    .nav-btn.active .nav-dot { opacity: 1; }
+
+    /* ── TABS ── */
+    .tab { display: none; }
+    .tab.active { display: block; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { padding: 52px 16px 10px; display: flex; align-items: flex-start; justify-content: space-between; }
+    .page-title { font-size: 30px; font-weight: 800; letter-spacing: -0.7px; }
+    .page-sub   { font-size: 13px; color: var(--subtext); margin-top: 3px; }
+
+    /* ── NOTIF BUTTON (no emoji) ── */
+    .sync-btn {
+      height: 30px; padding: 0 12px; border-radius: 6px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--subtext); font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; cursor: pointer; flex-shrink: 0; margin-top: 54px;
+      transition: background 0.12s, color 0.12s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .sync-btn:active { opacity: 0.7; }
+    .sync-btn.syncing { color: var(--accent); border-color: var(--accent); }
+    .sync-btn.ok     { color: #4ADE80; border-color: #4ADE80; }
+    .sync-btn.err    { color: #F87171; border-color: #F87171; }
+    .sync-spinner { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      border: 1.5px solid currentColor; border-top-color: transparent;
+      animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 11px; font-weight: 700; color: var(--subtext);
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 0 16px; margin-bottom: 6px; margin-top: 20px;
+    }
+
+    /* ── CHIPS ── */
+    .chip {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      border-radius: 20px; font-size: 10px; font-weight: 700; color: white;
+      cursor: pointer; user-select: none;
+      transition: filter 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .chip:active { transform: scale(0.88); filter: brightness(1.15); }
+
+    /* ── BADGES ── */
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .badge-red   { background: rgba(239,68,68,0.18);  color: #FCA5A5; }
+    .badge-green { background: rgba(74,222,128,0.15); color: #86EFAC; }
+    .badge-gray  { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+    .badge-major { background: rgba(167,139,250,0.2); color: #C4B5FD; }
+    .timer-badge {
+      background: rgba(129,140,248,0.15); color: #A5B4FC;
+      cursor: pointer; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+      transition: background 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .timer-badge:active { background: rgba(129,140,248,0.32); transform: scale(0.9); }
+
+    /* ── SCHOOLOGY LINK ── */
+    .schoology-btn {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      color: var(--accent); text-decoration: none;
+      padding: 2px 8px; border-radius: 6px;
+      background: var(--accent-dim);
+      transition: background 0.15s, transform 0.12s;
+    }
+    .schoology-btn:active { background: rgba(129,140,248,0.28); transform: scale(0.95); }
+
+    /* ── FOCUS CARD ── */
+    .focus-card {
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      border-radius: 12px; padding: 18px; margin: 12px 16px 10px; color: white;
+      box-shadow: 0 4px 20px rgba(79,70,229,0.35);
+      border: none;
+    }
+    .focus-label    { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.7; }
+    .focus-title    { font-size: 20px; font-weight: 800; margin-top: 5px; line-height: 1.2; letter-spacing: -0.3px; }
+    .focus-sub      { font-size: 12px; opacity: 0.82; margin-top: 6px; line-height: 1.5; }
+    .focus-duration {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 5px 12px; font-size: 11px; font-weight: 700; margin-top: 12px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .focus-duration:active { background: rgba(255,255,255,0.3); transform: scale(0.96); }
+
+    /* ── ALERTS ── */
+    .alert-banner {
+      margin: 0 16px 10px; border-radius: 14px; padding: 11px 13px;
+      display: flex; gap: 10px; align-items: flex-start;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .alert-banner.red   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.2); border-left: 3px solid #EF4444; }
+    .alert-banner.amber { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.16); border-left: 3px solid #F59E0B; }
+    .alert-banner.dismissing { opacity: 0; transform: translateX(12px); pointer-events: none; }
+    .alert-text    { font-size: 13px; font-weight: 500; line-height: 1.45; flex: 1; }
+    .alert-text b  { font-weight: 700; }
+    .alert-dismiss { font-size: 14px; color: var(--subtext); cursor: pointer; flex-shrink: 0; line-height: 1.4; transition: color 0.15s; padding: 0 2px; }
+    .alert-dismiss:active { color: var(--text); }
+
+    /* ── TWO-COLUMN TODAY ── */
+    .two-col-headers {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; padding: 0 16px; margin-bottom: 6px; margin-top: 20px;
+    }
+    .col-header-label { font-size: 11px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 1px; }
+    .two-col-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; padding: 0 16px; align-items: start;
+    }
+    .col-panel { display: flex; flex-direction: column; gap: 8px; }
+    .col-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid;
+      border-radius: 8px; padding: 10px 11px;
+      cursor: pointer; position: relative;
+      transition: background 0.12s;
+    }
+    .col-item:active { background: var(--card-hover); }
+    @media (hover: hover) { .col-item:hover { background: var(--card-hover); } }
+    .col-item-title  { font-size: 12px; font-weight: 700; line-height: 1.3; }
+    .col-item-time   { font-size: 10px; color: var(--subtext); margin-top: 2px; font-weight: 600; }
+    .col-item-footer { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .col-item-now    { border-color: var(--accent) !important; background: rgba(99,102,241,0.12) !important; }
+    .col-item-now .col-item-title { color: #C4B5FD; }
+
+    /* ── TIME LINE ── */
+    .time-now-line { display: flex; align-items: center; gap: 8px; pointer-events: none; margin: -2px 0 2px; }
+    .time-now-dot  { width: 7px; height: 7px; border-radius: 50%; background: #F87171; flex-shrink: 0; box-shadow: 0 0 6px rgba(248,113,113,0.5); }
+    .time-now-bar  { flex: 1; height: 1.5px; background: #F87171; border-radius: 1px; opacity: 0.65; }
+    .time-now-label { font-size: 9px; font-weight: 700; color: #F87171; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── WEEK VIEW ── */
+    .week-scroll { overflow-x: auto; padding: 0 16px 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .week-scroll::-webkit-scrollbar { display: none; }
+    .week-row { display: flex; gap: 8px; min-width: max-content; }
+
+    .day-col {
+      width: 92px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 7px 8px;
+      display: flex; flex-direction: column; position: relative;
+    }
+    .day-col.today { border-color: rgba(129,140,248,0.4); background: rgba(99,102,241,0.07); }
+    .day-header { text-align: center; margin-bottom: 8px; }
+    .day-name   { font-size: 10px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.5px; }
+    .day-num    { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .day-col.today .day-name { color: var(--accent); }
+    .today-num-circle {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--accent); color: white;
+      font-size: 14px; font-weight: 800;
+    }
+
+    .day-section-label {
+      font-size: 8px; font-weight: 800; color: var(--subtext);
+      text-transform: uppercase; letter-spacing: 0.8px; margin: 4px 0 4px;
+    }
+    .day-divider { height: 1px; background: var(--border); margin: 5px 0; }
+
+    .day-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px; padding: 6px 7px; margin-bottom: 5px; position: relative;
+      border-left: 2px solid;
+      font-size: 10px; font-weight: 600; line-height: 1.3;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .day-item:active { transform: scale(0.93); background: rgba(255,255,255,0.12); }
+    .day-item:last-child { margin-bottom: 0; }
+    .day-item-time  { font-size: 9px; color: var(--subtext); margin-top: 1px; font-weight: 500; }
+    .day-study-item { background: rgba(129,140,248,0.1); border-left-color: var(--accent) !important; color: #C4B5FD; }
+
+    /* ── GRADE CARDS ── */
+    .grade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+    .grade-card {
+      background: var(--card);
+      border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: background 0.12s;
+    }
+    .grade-card:active { background: var(--card-hover); }
+    @media (hover: hover) { .grade-card:hover { background: var(--card-hover); } }
+    .grade-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .grade-subject { font-size: 10px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.4px; }
+    .grade-value   { font-size: 28px; font-weight: 900; margin-top: 3px; letter-spacing: -1.5px; }
+    .grade-pct     { font-size: 11px; color: var(--subtext); font-weight: 500; }
+    .grade-alert   { font-size: 10px; color: #FCA5A5; margin-top: 5px; line-height: 1.35; font-weight: 600; }
+    .grade-ok      { font-size: 10px; color: #86EFAC; margin-top: 5px; font-weight: 600; }
+    .grade-hint    { font-size: 9px; color: rgba(255,255,255,0.18); margin-top: 7px; }
+
+    /* ── CATCH-UP ── */
+    .catchup-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 11px 8px; margin: 0 -8px; border-bottom: 1px solid var(--border);
+      border-radius: 10px; cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+    }
+    .catchup-item:last-child { border-bottom: none; }
+    .catchup-item:active { background: rgba(255,255,255,0.06); transform: scale(0.99); }
+    .catchup-icon  { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+    .catchup-title { font-size: 13px; font-weight: 700; }
+    .catchup-meta  { font-size: 11px; color: var(--subtext); margin-top: 2px; }
+    .catchup-note  { font-size: 12px; color: var(--subtext); margin-top: 4px; line-height: 1.45; }
+
+    /* ── STUDY PLAN ── */
+    .plan-header  { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .plan-title   { font-size: 14px; font-weight: 800; }
+    .plan-due     { font-size: 11px; color: var(--subtext); margin-left: auto; font-weight: 500; }
+    .plan-warning { font-size: 12px; color: #FCD34D; font-weight: 600; padding: 8px 11px; background: rgba(251,191,36,0.08); border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(251,191,36,0.16); }
+    .session-row  { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .session-row:last-child { border-bottom: none; }
+    .session-day  { font-size: 11px; font-weight: 700; min-width: 44px; color: var(--subtext); }
+    .session-day.today { color: var(--accent); }
+    .session-bar  { flex: 1; background: rgba(255,255,255,0.04); border-radius: 6px; padding: 7px 10px; border: 1px solid var(--border); }
+    .session-text { font-size: 12px; font-weight: 500; }
+    .divider      { height: 1px; background: var(--border); margin: 8px 0; }
+
+    /* ── TAB PILLS ── */
+    .tab-pills { display: flex; gap: 8px; padding: 8px 16px 0; }
+    .tab-pill {
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border);
+      background: var(--card); color: var(--subtext);
+      transition: background 0.12s, color 0.12s;
+    }
+    .tab-pill:active { opacity: 0.8; }
+    .tab-pill.active { background: var(--accent); color: white; border-color: transparent; }
+
+    /* ── UPCOMING LIST ── */
+    .upcoming-item {
+      display: flex; align-items: center; gap: 12px; padding: 11px 16px;
+      border-radius: 12px; cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+    }
+    .upcoming-item:active { background: rgba(255,255,255,0.07); transform: scale(0.99); }
+    @media (hover: hover) { .upcoming-item:hover { background: rgba(255,255,255,0.04); border-radius: 8px; } }
+
+    /* ── DUE ITEMS ── */
+    .due-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: opacity 0.15s; }
+    .due-item:last-child { border-bottom: none; }
+    .due-item:active { opacity: 0.6; }
+
+    /* ── CAL NOTE ── */
+    .cal-note { margin: 0 16px 10px; background: rgba(129,140,248,0.08); border-radius: 12px; padding: 9px 13px; font-size: 12px; color: #A5B4FC; font-weight: 600; border: 1px solid rgba(129,140,248,0.18); display: none; }
+
+    /* ── EMPTY ── */
+    .empty { text-align: center; padding: 32px 20px; color: var(--subtext); }
+    .empty-text { font-size: 14px; font-weight: 500; }
+
+    /* ══════════ MODALS ══════════ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: var(--safe-bottom);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-sheet {
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      border-top: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px 16px 0 0;
+      width: 100%; max-height: 84vh;
+      overflow-y: auto; padding: 18px 20px 36px;
+      box-shadow: 0 -8px 48px rgba(0,0,0,0.4);
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+      overscroll-behavior: contain;
+    }
+    .modal-overlay.open .modal-sheet { transform: translateY(0); }
+    .modal-handle { width: 34px; height: 4px; background: rgba(255,255,255,0.18); border-radius: 2px; margin: 0 auto 16px; }
+    .modal-title  { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; }
+    .modal-close  { font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; padding: 4px 8px; transition: opacity 0.15s; }
+    .modal-close:active { opacity: 0.6; }
+    .modal-sec-label { font-size: 11px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; }
+    .modal-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .modal-item:last-child { border-bottom: none; }
+    .modal-item-title { font-size: 14px; font-weight: 700; }
+    .modal-item-sub { font-size: 12px; color: var(--subtext); margin-top: 3px; line-height: 1.45; }
+
+    /* ── TIMER MODAL ── */
+    #timerModal {
+      position: fixed; inset: 0; z-index: 600;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    #timerModal.open { opacity: 1; pointer-events: all; }
+    .timer-card {
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px 26px 24px;
+      width: calc(100% - 48px); max-width: 320px;
+      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+      text-align: center;
+      transform: scale(0.88) translateY(14px);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #timerModal.open .timer-card { transform: scale(1) translateY(0); }
+    .timer-label    { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--subtext); margin-bottom: 14px; }
+    .timer-ring-wrap { position: relative; width: 170px; height: 170px; margin: 0 auto 18px; }
+    #timerCanvas    { position: absolute; top: 0; left: 0; width: 170px; height: 170px; }
+    .timer-display  { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-time     { font-size: 42px; font-weight: 900; letter-spacing: -2px; color: var(--text); }
+    .timer-sub      { font-size: 10px; color: var(--subtext); font-weight: 700; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .timer-btns     { display: flex; gap: 9px; }
+    .timer-btn {
+      flex: 1; padding: 13px; border-radius: 14px; font-size: 13px; font-weight: 700;
+      border: none; cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .timer-btn:active { opacity: 0.7; transform: scale(0.93); }
+    .timer-btn-primary   { background: var(--accent); color: white; }
+    .timer-btn-secondary { background: rgba(255,255,255,0.09); color: var(--text); border: 1px solid var(--border); }
+    .timer-btn-close     { background: rgba(255,255,255,0.06); color: var(--subtext); flex: 0.55; border: 1px solid var(--border); }
+
+    /* ── ADD EVENT BUTTON ── */
+    .add-event-btn {
+      font-size: 12px; font-weight: 600; color: var(--accent);
+      background: var(--accent-dim); border: 1px solid rgba(129,140,248,0.18);
+      border-radius: 6px; padding: 5px 12px; cursor: pointer;
+      transition: background 0.12s;
+    }
+    .add-event-btn:active { opacity: 0.7; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-label { font-size: 11px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+    .form-input {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 7px; padding: 9px 11px; color: var(--text);
+      font-size: 14px; font-family: inherit; outline: none;
+      transition: border-color 0.12s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input option { background: #1e1e1e; color: var(--text); }
+    .form-submit-btn {
+      width: 100%; padding: 13px; border-radius: 14px; font-size: 14px; font-weight: 700;
+      background: var(--accent); color: white; border: none; cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .form-submit-btn:active { opacity: 0.8; transform: scale(0.97); }
+
+    /* ── CUSTOM EVENT TAG ── */
+    .custom-tag { font-size: 9px; font-weight: 700; color: var(--accent); background: var(--accent-dim); border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+
+    /* ── STUDY GUIDE BUTTON ── */
+    .guide-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: white;
+      background: #4F46E5;
+      border: none;
+      border-radius: 6px; padding: 7px 12px; cursor: pointer;
+      transition: opacity 0.12s;
+    }
+    .guide-btn:active { opacity: 0.8; transform: scale(0.96); }
+    .guide-btn.loading { opacity: 0.6; pointer-events: none; }
+    /* ── DRAG & DROP ── */
+    .drag-handle {
+      display: inline-block; color: rgba(255,255,255,0.16); font-size: 11px;
+      cursor: grab; user-select: none; line-height: 1; letter-spacing: -1px;
+      transition: color 0.15s; flex-shrink: 0; padding: 0 3px;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    [draggable="true"] { cursor: grab; }
+    [draggable="true"]:hover .drag-handle { color: rgba(255,255,255,0.42); }
+    [draggable="true"]:active { cursor: grabbing; }
+    .drag-dragging { opacity: 0.35; transform: scale(0.97); transition: opacity 0.1s, transform 0.1s !important; }
+    .day-col.drag-bottom { box-shadow: inset 0 -3px 0 var(--accent); background: rgba(129,140,248,0.06) !important; }
+    .day-col.drag-bottom::after { content: 'Study'; position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 8px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; pointer-events: none; }
+    .drag-over { box-shadow: inset 0 0 0 2px var(--accent) !important; }
+
+
+    /* ── NOTIF ITEMS ── */
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="content">
+
+    <!-- TODAY TAB -->
+    <div class="tab active" id="tab-today">
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="greeting">Hey Caiden</div>
+          <div class="page-sub"  id="todayDate"></div>
+        </div>
+        <button class="sync-btn" id="syncBtn">
+          <span id="syncSpinner" style="display:none" class="sync-spinner"></span>
+          <span id="syncLabel">Sync</span>
+        </button>
+      </div>
+
+      <div class="cal-note" id="calNote">Calendar not connected — schedule estimated.</div>
+      <div id="focusCardWrap"></div>
+      <div id="alertsWrap"></div>
+
+      <div class="two-col-headers">
+        <div class="col-header-label">During the Day</div>
+        <div class="col-header-label">Study / Work</div>
+      </div>
+      <div class="two-col-grid" id="todayCols"></div>
+
+      <div class="section-label" id="dueLabel"></div>
+      <div class="card card-sm" id="dueCard" style="display:none"></div>
+    </div>
+
+    <!-- WEEK TAB -->
+    <div class="tab" id="tab-week">
+      <div class="page-header">
+        <div>
+          <div class="page-title">This Week</div>
+          <div class="page-sub" id="weekRange"></div>
+        </div>
+      </div>
+      <div class="week-scroll"><div class="week-row" id="weekRow"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-top:20px;margin-bottom:6px">
+        <div class="section-label" style="margin:0;padding:0">All Upcoming</div>
+        <button class="add-event-btn" id="addEventBtn">+ Add Event</button>
+      </div>
+      <div id="upcomingList"></div>
+    </div>
+
+    <!-- PLAN TAB -->
+    <div class="tab" id="tab-plan">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Study Plan</div>
+          <div class="page-sub">Multi-day prep + catch-up</div>
+        </div>
+      </div>
+      <div class="tab-pills">
+        <button class="tab-pill active" data-plan="study">Study</button>
+        <button class="tab-pill" data-plan="catchup">Catch-up</button>
+      </div>
+      <div id="planStudy" style="margin-top:12px"></div>
+      <div id="planCatchup" style="margin-top:12px;display:none"></div>
+    </div>
+
+    <!-- GRADES TAB -->
+    <div class="tab" id="tab-grades">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Grades</div>
+          <div class="page-sub" id="gradesDate"></div>
+        </div>
+      </div>
+      <div id="gradeAlerts"></div>
+      <div class="grade-grid" id="gradeGrid"></div>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- NAV (text only) -->
+  <div id="nav">
+    <button class="nav-btn active" data-tab="today" id="nav-today">
+      <span class="nav-label">Today</span>
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="week" id="nav-week">
+      <span class="nav-label">Week</span>
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="plan" id="nav-plan">
+      <span class="nav-label">Plan</span>
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="grades" id="nav-grades">
+      <span class="nav-label">Grades</span>
+      <span class="nav-dot"></span>
+    </button>
+  </div>
+</div>
+
+<!-- TIMER MODAL -->
+<div id="timerModal">
+  <div class="timer-card">
+    <div class="timer-label" id="timerLabel">Focus Timer</div>
+    <div class="timer-ring-wrap">
+      <canvas id="timerCanvas"></canvas>
+      <div class="timer-display">
+        <div class="timer-time" id="timerDisplay">00:00</div>
+        <div class="timer-sub"  id="timerSubLabel">tap start</div>
+      </div>
+    </div>
+    <div class="timer-btns">
+      <button class="timer-btn timer-btn-secondary" id="timerResetBtn">Reset</button>
+      <button class="timer-btn timer-btn-primary"   id="timerStartBtn">Start</button>
+      <button class="timer-btn timer-btn-close"     id="timerCloseBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBJECT FILTER MODAL -->
+<div class="modal-overlay" id="filterModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div id="filterHeader"></div>
+      <button class="modal-close" id="filterCloseBtn">Done</button>
+    </div>
+    <div id="filterContent"></div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="modal-title" id="detailTitle"></div>
+      <button class="modal-close" id="detailCloseBtn">Done</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+
+
+<!-- ADD EVENT MODAL -->
+<div class="modal-overlay" id="addEventModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title">Add Event</div>
+      <button class="modal-close" id="addEventCloseBtn">Cancel</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div class="form-label">Title</div>
+        <input class="form-input" id="evTitle" type="text" placeholder="e.g. Study group, dentist...">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="form-label">Date</div>
+          <select class="form-input" id="evDate"></select>
+        </div>
+        <div>
+          <div class="form-label">Time</div>
+          <input class="form-input" id="evTime" type="time" value="17:00">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="form-label">Subject (optional)</div>
+          <select class="form-input" id="evSubject">
+            <option value="">— none —</option>
+          </select>
+        </div>
+        <div>
+          <div class="form-label">Type</div>
+          <select class="form-input" id="evType">
+            <option value="event">Event / Block</option>
+            <option value="study">Study / Work</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="form-label">Note (optional)</div>
+        <input class="form-input" id="evNote" type="text" placeholder="Any details...">
+      </div>
+      <button class="form-submit-btn" id="addEventSaveBtn">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA  (updated by sync task — do not edit manually)
+// ===DATA_BEGIN===
+const DATA = {
+  "meta": {
+    "lastUpdated": "2026-04-14 15:15 auto-sync (scheduled)",
+    "calendarConnected": true,
+    "browserConnected": false,
+    "note": "Calendar connected. Chrome extension offline -- deep links sourced from CSV URLs (all are valid /assignment/XXXX format)."
+  },
+  "profile": {
+    "name": "Caiden",
+    "bedtime": "22:30",
+    "schoolStart": "8:35",
+    "schoolEnd": "15:15",
+    "homeNoSports": "15:30",
+    "homeSports": "19:00"
+  },
+  "notifications": [
+    {
+      "id": "n1",
+      "time": "2026-04-14 auto-sync",
+      "read": false,
+      "message": "Tue 4/14: SS MINOR Quiz 12pm today. Film Treatment was due 8am + Kin(g)dom HW due 8:25am (confirm submitted). Lax practice 8:15-9:15pm. Tonight 9:30-10:30pm is your Gatsby revision window -- hockey tryouts start Fri so essay MUST be done by Thu night."
+    },
+    {
+      "id": "n2",
+      "time": "2026-04-13 auto-sync",
+      "read": true,
+      "message": "Mon 4/13: TODAY IS THE GAUNTLET. Mandarin Gimkit 11am, USL Gatsby Zine 11:10am, Mandarin WSQ1 quiz 11:59am, USL MAJOR Gatsby in-class essay 12:10pm, A2 Ch8A Quiz + HW 8.3 2:15pm."
+    }
+  ],
+  "subjects": {
+    "A2": {
+      "full": "Algebra 2",
+      "color": "#3B82F6"
+    },
+    "Chem H": {
+      "full": "Chemistry Honors",
+      "color": "#8B5CF6"
+    },
+    "Civics": {
+      "full": "Civics",
+      "color": "#10B981"
+    },
+    "Film": {
+      "full": "Filmmaking",
+      "color": "#F59E0B"
+    },
+    "Mandarin": {
+      "full": "Mandarin 2/2H",
+      "color": "#EF4444"
+    },
+    "SS": {
+      "full": "Sacred Scriptures",
+      "color": "#6366F1"
+    },
+    "USL H": {
+      "full": "US Lit Honors",
+      "color": "#EC4899"
+    },
+    "USL": {
+      "full": "US Literature",
+      "color": "#F97316"
+    }
+  },
+  "alerts": [
+    {
+      "id": "a1",
+      "type": "red",
+      "text": "<b>Hockey Tryouts Fri-Sun 4/17-4/19 (3 days away)</b> + USL MAJOR Gatsby Final due Mon 4/20 11:10am. Essay MUST be done by Thu 4/16 night. You have Tue night + Wed night + Thu night = 3 sessions to finish. Don't waste them."
+    },
+    {
+      "id": "a2",
+      "type": "red",
+      "text": "<b>USL H MAJOR Position Paper #2 \u2014 still overdue (due 4/10, now 4 days late)</b>. If not submitted, do it TONIGHT. Every day it sits, the late penalty grows. MAJOR grade at stake."
+    },
+    {
+      "id": "a3",
+      "type": "amber",
+      "text": "<b>SS MINOR Quiz today 12pm</b> \u2014 Gospel Intro, Infancy, World of Jesus. You prepped last night. Film Treatment (was 8am) + Kin(g)dom HW (was 8:25am) \u2014 confirm submitted, or late-submit if accepted."
+    },
+    {
+      "id": "a4",
+      "type": "amber",
+      "text": "<b>Film Project 8 Final Film due Tue 4/21 8am</b>. After tryouts weekend you'll have Mon 4/20 evening only. Start planning scenes this week."
+    }
+  ],
+  "today": {
+    "date": "2026-04-14",
+    "hasSports": true,
+    "focusTask": {
+      "title": "Gatsby Final Draft revision (after lax practice)",
+      "subject": "USL",
+      "note": "Lax practice 8:15-9:15pm. Home ~9:30pm. Tonight: (1) Confirm Film Treatment + Kin(g)dom HW submitted (5 min), (2) Gatsby revision 9:30-10:30pm -- expand in-class draft with textual evidence. Hockey tryouts start Fri -- essay must be DONE by Thu night.",
+      "duration": 70
+    },
+    "agenda": [
+      {
+        "start": "8:00am",
+        "subject": "Film",
+        "type": "hw",
+        "duration": "\u2014",
+        "title": "Final Film Treatment/Script DUE 8:00am",
+        "note": "Confirm submitted this morning. If not, late submit ASAP.",
+        "tags": [
+          {
+            "label": "DUE",
+            "cls": "badge-amber"
+          }
+        ],
+        "schoologyUrl": "https://schoology.shschools.org/assignment/8343507180"
+      },
+      {
+        "start": "8:25am",
+        "subject": "SS",
+        "type": "hw",
+        "duration": "\u2014",
+        "title": "HW: Kin(g)dom note sheet DUE 8:25am",
+        "note": "Confirm submitted in class this morning.",
+        "tags": [
+          {
+            "label": "DUE",
+            "cls": "badge-amber"
+          }
+        ],
+        "schoologyUrl": "https://schoology.shschools.org/assignment/8343750050"
+      },
+      {
+        "start": "12:00pm",
+        "subject": "SS",
+        "type": "event",
+        "duration": "10 min",
+        "title": "MINOR Quiz: Gospel Intro, Infancy, World of Jesus",
+        "note": "You reviewed last night. Execute.",
+        "tags": [
+          {
+            "label": "Quiz",
+            "cls": "badge-amber"
+          }
+        ],
+        "schoologyUrl": "https://schoology.shschools.org/assignment/8326364446"
+      },
+      {
+        "start": "8:15pm",
+        "subject": "A2",
+        "type": "block",
+        "duration": "60 min",
+        "title": "Spring 16aaa lacrosse practice 8:15-9:15pm",
+        "note": "Home ~9:30pm after practice.",
+        "tags": [
+          {
+            "label": "Sports",
+            "cls": "badge-amber"
+          }
+        ],
+        "schoologyUrl": "https://schoology.shschools.org/"
+      },
+      {
+        "start": "9:30pm",
+        "subject": "USL",
+        "type": "study",
+        "duration": "60 min",
+        "title": "Gatsby essay: expand in-class draft + evidence",
+        "note": "Take in-class draft and strengthen textual evidence. MAJOR due Mon 4/20. Tryouts start Fri -- 3 sessions to finish.",
+        "tags": [
+          {
+            "label": "MAJOR prep",
+            "cls": "badge-red"
+          }
+        ],
+        "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
+      },
+      {
+        "start": "10:30pm",
+        "subject": "USL H",
+        "type": "study",
+        "duration": "10 min",
+        "title": "CHECK: Position Paper #2 submitted? Submit if not.",
+        "note": "Due 4/10, now 4 days late. If not submitted yet, write/submit TONIGHT. Do NOT let this slide another day.",
+        "tags": [
+          {
+            "label": "OVERDUE MAJOR",
+            "cls": "badge-red"
+          }
+        ],
+        "schoologyUrl": "https://schoology.shschools.org/assignment/8188061642"
+      }
+    ]
+  },
+  "week": [
+    {
+      "date": "2026-04-14",
+      "day": "Tue",
+      "label": "Today",
+      "hasSports": true,
+      "note": "Film Treatment due 8am + Kin(g)dom HW 8:25am (confirm submitted). SS MINOR Quiz 12pm. Lax 8:15-9:15pm. Tonight: Gatsby revision + check USL H Paper #2.",
+      "items": [
+        {
+          "subject": "Film",
+          "label": "Final Film Treatment/Script DUE 8:00am",
+          "time": "8:00am",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8343507180"
+        },
+        {
+          "subject": "SS",
+          "label": "HW Kin(g)dom note sheet DUE 8:25am",
+          "time": "8:25am",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8343750050"
+        },
+        {
+          "subject": "SS",
+          "label": "MINOR Quiz: Gospel Intro/Infancy/World of Jesus 12:00pm",
+          "time": "12:00pm",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8326364446"
+        },
+        {
+          "subject": "A2",
+          "label": "Spring 16aaa lax practice 8:15-9:15pm",
+          "time": "8:15pm",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        },
+        {
+          "subject": "USL",
+          "label": "Gatsby essay: expand draft + evidence",
+          "time": "9:30pm",
+          "study": true,
+          "major": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
+        },
+        {
+          "subject": "USL H",
+          "label": "CHECK: Position Paper #2 \u2014 submit if missing",
+          "time": "10:30pm",
+          "study": true,
+          "major": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8188061642"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-15",
+      "day": "Wed",
+      "label": "Tomorrow",
+      "hasSports": true,
+      "note": "Lax practice 7:30-8:30pm. Gatsby revision continues \u2014 intro/conclusion + argument tightening. Chem catchup if time.",
+      "items": [
+        {
+          "subject": "A2",
+          "label": "Spring 16aaa lax practice 7:30-8:30pm",
+          "time": "7:30pm",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        },
+        {
+          "subject": "USL",
+          "label": "Gatsby essay: full revision \u2014 intro/conclusion",
+          "time": "9:00pm",
+          "study": true,
+          "major": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
+        },
+        {
+          "subject": "Chem H",
+          "label": "Catchup: Shell Lab + States of Matter + L6.1-6.4 C4U (if time)",
+          "time": "9:45pm",
+          "study": true,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-16",
+      "day": "Thu",
+      "label": "Thursday",
+      "hasSports": false,
+      "note": "Coach Justin 6-7am. NO SPORTS after school -- your biggest window this week. GATSBY MUST BE SUBMITTED TONIGHT (tryouts Fri). A2 HW 8.2 due Fri 1:15pm.",
+      "items": [
+        {
+          "subject": "A2",
+          "label": "Coach Justin 6:00-7:00am",
+          "time": "6:00am",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        },
+        {
+          "subject": "USL",
+          "label": "GATSBY FINAL: proofread + format + SUBMIT",
+          "time": "7:00pm",
+          "study": true,
+          "major": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
+        },
+        {
+          "subject": "A2",
+          "label": "HW 8.2 (due Fri 1:15pm)",
+          "time": "9:00pm",
+          "study": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8327739172"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-17",
+      "day": "Fri",
+      "label": "Friday",
+      "hasSports": true,
+      "note": "Tier 1 Hockey Tryouts Day 1 (all day). A2 HW 8.2 due 1:15pm \u2014 submit before tryouts. Gatsby should already be in.",
+      "items": [
+        {
+          "subject": "A2",
+          "label": "Tier 1 Hockey Tryouts (all day)",
+          "time": "all day",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        },
+        {
+          "subject": "A2",
+          "label": "HW 8.2 DUE 1:15pm",
+          "time": "1:15pm",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8327739172"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-18",
+      "day": "Sat",
+      "label": "Saturday",
+      "hasSports": true,
+      "note": "Tier 1 Hockey Tryouts Day 2. No study expected.",
+      "items": [
+        {
+          "subject": "A2",
+          "label": "Tier 1 Hockey Tryouts (all day)",
+          "time": "all day",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-19",
+      "day": "Sun",
+      "label": "Sunday",
+      "hasSports": true,
+      "note": "Tier 1 Hockey Tryouts Day 3. Rest if possible. Film Project 8 planning if energy permits (due Tue).",
+      "items": [
+        {
+          "subject": "A2",
+          "label": "Tier 1 Hockey Tryouts (all day)",
+          "time": "all day",
+          "study": false,
+          "schoologyUrl": "https://schoology.shschools.org/"
+        },
+        {
+          "subject": "Film",
+          "label": "Project 8 Final Film: plan scenes (if time)",
+          "time": "evening",
+          "study": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-20",
+      "day": "Mon",
+      "label": "Next Mon",
+      "hasSports": false,
+      "note": "USL MAJOR Gatsby DUE 11:10am (already submitted Thu). Start Position Paper #3 tonight + Film Project 8 shoot/edit.",
+      "items": [
+        {
+          "subject": "USL",
+          "label": "MAJOR Gatsby Final Draft DUE 11:10am",
+          "time": "11:10am",
+          "study": false,
+          "major": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
+        },
+        {
+          "subject": "Film",
+          "label": "Project 8 Final Film: shoot + edit",
+          "time": "4:00pm",
+          "study": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134"
+        },
+        {
+          "subject": "USL H",
+          "label": "Position Paper #3: topic + sources",
+          "time": "8:00pm",
+          "study": true,
+          "major": true,
+          "schoologyUrl": "https://schoology.shschools.org/assignment/8192533952"
+        }
+      ]
+    }
+  ],
+  "studyPlan": [
+    {
+      "subject": "USL",
+      "title": "MAJOR: Gatsby Essay -- What's Great About The Great Gatsby?",
+      "due": "2026-04-20",
+      "dueLabel": "Mon 4/20 11:10am -- MUST submit by Thu 4/16 night (tryouts Fri-Sun)",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016",
+      "sessions": [
+        {
+          "day": "Sun 4/12",
+          "task": "Re-read key Gatsby passages + brainstorm thesis",
+          "done": true
+        },
+        {
+          "day": "Mon 4/13",
+          "task": "IN-CLASS draft (75 min ST)",
+          "done": true
+        },
+        {
+          "day": "Tue 4/14",
+          "task": "Expand in-class draft + strengthen textual evidence (after 9:30pm)",
+          "done": false
+        },
+        {
+          "day": "Wed 4/15",
+          "task": "Full revision -- intro/conclusion + tighten argument (after practice)",
+          "done": false
+        },
+        {
+          "day": "Thu 4/16",
+          "task": "FINAL: proofread + format + SUBMIT (tryouts Fri)",
+          "done": false
+        }
+      ]
+    },
+    {
+      "subject": "Film",
+      "title": "MAJOR Project 8: Exquisite Corpse Final Film",
+      "due": "2026-04-21",
+      "dueLabel": "Tue 4/21 8:00am",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134",
+      "sessions": [
+        {
+          "day": "Sun 4/19",
+          "task": "Plan scenes/shotlist (if energy after tryouts)",
+          "done": false
+        },
+        {
+          "day": "Mon 4/20",
+          "task": "Shoot + initial edit",
+          "done": false
+        },
+        {
+          "day": "Mon 4/20 eve",
+          "task": "Final edit + SUBMIT before 8am Tue",
+          "done": false
+        }
+      ]
+    },
+    {
+      "subject": "USL H",
+      "title": "MAJOR Position Paper #3",
+      "due": "2026-04-24",
+      "dueLabel": "Fri 4/24 11:59pm",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8192533952",
+      "sessions": [
+        {
+          "day": "Mon 4/20",
+          "task": "Topic + gather sources (after Gatsby submission)",
+          "done": false
+        },
+        {
+          "day": "Tue 4/21",
+          "task": "Outline + thesis draft",
+          "done": false
+        },
+        {
+          "day": "Wed 4/22",
+          "task": "Body paragraphs with textual evidence",
+          "done": false
+        },
+        {
+          "day": "Thu 4/23",
+          "task": "Intro/conclusion + full revision (Goalie session 4pm)",
+          "done": false
+        },
+        {
+          "day": "Fri 4/24",
+          "task": "Proofread + SUBMIT before 11:59pm",
+          "done": false
+        }
+      ]
+    },
+    {
+      "subject": "Chem H",
+      "title": "MAJOR Unit 6 Test",
+      "due": "2026-05-01",
+      "dueLabel": "Fri 5/1 8:25am",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8297173420",
+      "sessions": [
+        {
+          "day": "Week of 4/20",
+          "task": "Clear Chem catchup: Shell Lab, States of Matter, L6.1-6.4 C4U",
+          "done": false
+        },
+        {
+          "day": "Week of 4/27",
+          "task": "Review Unit 6 notes: Thermal Expansion, Equilibrium, FPD",
+          "done": false
+        },
+        {
+          "day": "Wed 4/29",
+          "task": "Practice problems + stamp sheet",
+          "done": false
+        },
+        {
+          "day": "Thu 4/30",
+          "task": "Final review night before test",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "catchup": [
+    {
+      "subject": "USL H",
+      "title": "MAJOR Position Paper #2",
+      "due": "4/10",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8188061642",
+      "action": "urgent",
+      "note": "4 days overdue. No grade. Submit TONIGHT. Late penalty grows daily."
+    },
+    {
+      "subject": "SS",
+      "title": "MAJOR Assessment Exegesis Unit 1",
+      "due": "2/27",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8183436996",
+      "action": "urgent",
+      "note": "46 days, no grade. Email Fr. Carroll ASAP."
+    },
+    {
+      "subject": "USL",
+      "title": "MAJOR: Gatsby Close Reading Exam",
+      "due": "3/23",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8185112230",
+      "action": "talk",
+      "note": "22 days, no grade. Ask Fries after class."
+    },
+    {
+      "subject": "Film",
+      "title": "Project 7 Socially Concerned Pre-Production",
+      "due": "2/06",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8238234187",
+      "action": "talk",
+      "note": "67 days overdue, no submission/grade. Talk to Quinn."
+    },
+    {
+      "subject": "Film",
+      "title": "Exquisite Corpse: Final Script",
+      "due": "3/25",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8319506657",
+      "action": "talk",
+      "note": "20 days, no grade. Follow up with Quinn."
+    },
+    {
+      "subject": "Chem H",
+      "title": "CW Quiz - Acid/Base and pH Calculations",
+      "due": "2/13",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8251799850",
+      "action": "talk",
+      "note": "60 days ungraded. Mention to Grieb."
+    },
+    {
+      "subject": "Chem H",
+      "title": "Shell Lab Write up",
+      "due": "3/12",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8289285212",
+      "action": "soft",
+      "note": "33 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "Chem H",
+      "title": "CW Quiz - Thermal Expansion/Equilibrium/FPD",
+      "due": "4/09",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8339176424",
+      "action": "soft",
+      "note": "5 days. Likely just ungraded. Monitor."
+    },
+    {
+      "subject": "Chem H",
+      "title": "States of Matter",
+      "due": "3/23",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8320027546",
+      "action": "soft",
+      "note": "22 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "Chem H",
+      "title": "L6.1-6.4 C4U",
+      "due": "3/30",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8297173563",
+      "action": "soft",
+      "note": "15 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "A2",
+      "title": "HW 8.1",
+      "due": "4/08",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8327739161",
+      "action": "soft",
+      "note": "6 days, no grade. Confirm submitted."
+    },
+    {
+      "subject": "A2",
+      "title": "HW 7.1",
+      "due": "3/13",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8287302823",
+      "action": "soft",
+      "note": "Graded F. Ask Demlinger about resubmission."
+    },
+    {
+      "subject": "Mandarin",
+      "title": "HW 4/7 WSQ1 Matching + Listen/Speak",
+      "due": "4/09",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8337729462",
+      "action": "soft",
+      "note": "5 days, no grade. Confirm with Huang."
+    },
+    {
+      "subject": "Mandarin",
+      "title": "MINOR Unit 7 Test",
+      "due": "3/19",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8283676780",
+      "action": "talk",
+      "note": "26 days, no grade. Ask Huang."
+    },
+    {
+      "subject": "Civics",
+      "title": "HONORS SAQ 2",
+      "due": "TBD",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8319550831",
+      "action": "talk",
+      "note": "No due date. Ask Wade-Stueckle."
+    },
+    {
+      "subject": "SS",
+      "title": "HW: World of Jesus Jigsaw",
+      "due": "4/08",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8326552392",
+      "action": "soft",
+      "note": "6 days, no grade. Confirm submitted."
+    },
+    {
+      "subject": "SS",
+      "title": "HW: Stories of David",
+      "due": "3/13",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8289710730",
+      "action": "soft",
+      "note": "32 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "SS",
+      "title": "HW/CW: Messiah One-Pager and Key",
+      "due": "3/17",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8291362165",
+      "action": "soft",
+      "note": "28 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "SS",
+      "title": "CW/HW: Jesus the Refugee",
+      "due": "3/24",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8322146134",
+      "action": "soft",
+      "note": "21 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "Civics",
+      "title": "Step 2. Political Parties and Civil Society",
+      "due": "3/25",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8315884919",
+      "action": "soft",
+      "note": "20 days overdue. Submit if still accepted."
+    },
+    {
+      "subject": "Film",
+      "title": "Project 8: Exquisite Corpse Final Film",
+      "due": "4/21",
+      "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134",
+      "action": "soft",
+      "note": "Due 4/21 -- 7 days. Start after tryouts."
+    }
+  ],
+  "grades": {
+    "A2": {
+      "pct": 91.19,
+      "letter": "A-",
+      "flag": null
+    },
+    "Chem H": {
+      "pct": 82.14,
+      "letter": "B-",
+      "flag": "Low -- missing assignments dragging grade. 4+ overdue items."
+    },
+    "Civics": {
+      "pct": null,
+      "letter": "A",
+      "flag": null
+    },
+    "Film": {
+      "pct": 4.77,
+      "letter": "?",
+      "flag": "Grade looks incorrect -- check with Quinn"
+    },
+    "Mandarin": {
+      "pct": null,
+      "letter": "B",
+      "flag": "Could improve -- check missing submissions"
+    },
+    "SS": {
+      "pct": null,
+      "letter": "A",
+      "flag": "Multiple overdue HW items -- risk of grade drop"
+    },
+    "USL H": {
+      "pct": 94.0,
+      "letter": "A",
+      "flag": "MAJOR Paper #2 still overdue -- tank risk"
+    },
+    "USL": {
+      "pct": null,
+      "letter": "B+",
+      "flag": null
+    }
+  }
+};
+// ===DATA_END===
+
+// ============================================================
+// DETAIL REGISTRY  (avoids fragile inline JS)
+// ============================================================
+const DETAILS = {};
+let _dc = 0;
+function reg(title, html) {
+  const id = 'd' + (_dc++);
+  DETAILS[id] = { title, html };
+  return id;
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+const tmr = { rem:0, total:0, running:false, iv:null };
+
+function openTimer(minutes, label) {
+  clearInterval(tmr.iv);
+  tmr.total = minutes * 60; tmr.rem = tmr.total; tmr.running = false;
+  document.getElementById('timerLabel').textContent = label || (minutes + ' min');
+  document.getElementById('timerStartBtn').textContent = 'Start';
+  document.getElementById('timerSubLabel').textContent = 'tap start';
+  document.getElementById('timerModal').classList.add('open');
+  drawTimer();
+}
+
+function drawTimer() {
+  const canvas = document.getElementById('timerCanvas');
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const sz = 170;
+  if (canvas.width !== sz * dpr) { canvas.width = sz * dpr; canvas.height = sz * dpr; }
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, sz, sz);
+  const cx = sz/2, cy = sz/2, r = 72;
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=10; ctx.stroke();
+  const pct = tmr.total > 0 ? tmr.rem / tmr.total : 0;
+  if (pct > 0 || tmr.rem === 0 && tmr.total > 0) {
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+(tmr.rem===0?1:pct)*Math.PI*2);
+    ctx.strokeStyle = tmr.rem === 0 ? '#4ADE80' : '#818CF8';
+    ctx.lineWidth=10; ctx.lineCap='round'; ctx.stroke();
+  }
+  const m = Math.floor(tmr.rem/60), s = tmr.rem%60;
+  document.getElementById('timerDisplay').textContent =
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function timerToggle() {
+  if (tmr.running) {
+    clearInterval(tmr.iv); tmr.running=false;
+    document.getElementById('timerStartBtn').textContent='Resume';
+    document.getElementById('timerSubLabel').textContent='paused';
+  } else {
+    if (tmr.rem===0) { timerReset(); return; }
+    tmr.iv = setInterval(()=>{
+      tmr.rem = Math.max(0,tmr.rem-1); drawTimer();
+      document.getElementById('timerSubLabel').textContent = tmr.rem>0?'focus time':'done!';
+      if (tmr.rem===0) {
+        clearInterval(tmr.iv); tmr.running=false;
+        document.getElementById('timerStartBtn').textContent='Start';
+        if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+      }
+    },1000);
+    tmr.running=true;
+    document.getElementById('timerStartBtn').textContent='Pause';
+    document.getElementById('timerSubLabel').textContent='focus time';
+  }
+}
+
+function timerReset() {
+  clearInterval(tmr.iv); tmr.running=false; tmr.rem=tmr.total;
+  document.getElementById('timerStartBtn').textContent='Start';
+  document.getElementById('timerSubLabel').textContent='tap start';
+  drawTimer();
+}
+
+function closeTimer() {
+  clearInterval(tmr.iv); tmr.running=false;
+  document.getElementById('timerModal').classList.remove('open');
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openDetailModal(title, html) {
+  document.getElementById('detailTitle').textContent = title;
+  document.getElementById('detailContent').innerHTML = html;
+  openModal('detailModal');
+}
+
+function schoologyBtn(url) {
+  if (!url) return '';
+  return `<a class="schoology-btn" href="${url}" target="_blank" onclick="event.stopPropagation()">View in Schoology</a>`;
+}
+
+// ============================================================
+// SUBJECT FILTER
+// ============================================================
+function filterSubject(subject) {
+  const s = DATA.subjects[subject];
+  if (!s) return;
+  const color = s.color;
+  document.getElementById('filterHeader').innerHTML =
+    `<span style="display:inline-flex;align-items:center;padding:5px 14px;border-radius:20px;font-size:14px;font-weight:800;color:white;background:${color}">${subject} — ${s.full}</span>`;
+
+  let html = '';
+
+  const todayItems = DATA.today.agenda.filter(a => a.subject===subject);
+  if (todayItems.length) {
+    html += `<div class="modal-sec-label">Tonight</div>`;
+    todayItems.forEach(a => {
+      html += `<div class="modal-item"><div class="modal-item-title">${a.title}</div>
+        <div class="modal-item-sub">${a.start} · ${a.duration} · ${a.note}</div>
+        ${schoologyBtn(a.schoologyUrl)}</div>`;
+    });
+  }
+
+  const weekItems = [];
+  DATA.week.forEach(day => day.items.filter(i=>i.subject===subject).forEach(i=>weekItems.push({...i,date:day.date,dayLabel:day.label})));
+  if (weekItems.length) {
+    html += `<div class="modal-sec-label">This Week</div>`;
+    weekItems.forEach(i => {
+      const ds = new Date(i.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+      html += `<div class="modal-item"><div class="modal-item-title">${i.label}</div>
+        <div class="modal-item-sub">${ds} at ${i.time}${i.study?' · study session':''}</div>
+        ${schoologyBtn(i.schoologyUrl)}</div>`;
+    });
+  }
+
+  const planItems = DATA.studyPlan.filter(p=>p.subject===subject);
+  if (planItems.length) {
+    html += `<div class="modal-sec-label">Study Plan</div>`;
+    planItems.forEach(p => {
+      html += `<div class="modal-item"><div class="modal-item-title">${p.title}
+        <span style="font-size:10px;color:${p.weight==='MAJOR'?'#C4B5FD':'rgba(255,255,255,0.4)'};font-weight:700;margin-left:4px">${p.weight}</span></div>
+        <div class="modal-item-sub">Due: ${p.due}</div>`;
+      p.sessions.forEach(s=>{html+=`<div style="font-size:11px;color:var(--subtext);padding:3px 0 0 8px">· ${s.day} ${s.date}: ${s.focus} (${s.duration})</div>`;});
+      html += schoologyBtn(p.schoologyUrl) + `</div>`;
+    });
+  }
+
+  const catchItems = DATA.catchup.filter(c=>c.subject===subject);
+  if (catchItems.length) {
+    html += `<div class="modal-sec-label">Catch-up</div>`;
+    catchItems.forEach(c => {
+      html += `<div class="modal-item"><div class="modal-item-title">${c.title}</div>
+        <div class="modal-item-sub">Was due ${c.dueDate} — ${c.note}</div>
+        ${schoologyBtn(c.schoologyUrl)}</div>`;
+    });
+  }
+
+  const grade = DATA.grades.find(g=>g.short===subject);
+  if (grade) {
+    html += `<div class="modal-sec-label">Grade</div>
+      <div class="modal-item">
+        <div style="font-size:24px;font-weight:900;color:${color}">${grade.letter}
+          <span style="font-size:14px;color:var(--subtext);font-weight:500">${grade.grade}</span></div>
+        <div class="modal-item-sub">${grade.alert ? grade.alert : grade.ok || ''}</div>
+      </div>`;
+  }
+
+  if (!html) html = `<div class="empty"><div class="empty-text">No items for this subject.</div></div>`;
+  document.getElementById('filterContent').innerHTML = html;
+  openModal('filterModal');
+}
+
+// ============================================================
+// GRADE DETAIL
+// ============================================================
+function openGradeDetail(idx) {
+  const g = DATA.grades[idx];
+  const color = subjectColor(g.short);
+  let html = `<div style="text-align:center;padding:10px 0 18px">
+    <div style="font-size:50px;font-weight:900;color:${color};letter-spacing:-3px">${g.letter}</div>
+    <div style="font-size:17px;font-weight:700;color:${color};margin-top:-4px">${g.grade}</div>
+    <div style="font-size:13px;color:var(--subtext);margin-top:4px">${g.full}</div>
+  </div>`;
+  if (g.alert) html += `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:11px;margin-bottom:12px;font-size:13px;font-weight:600;color:#FCA5A5">${g.alert}</div>`;
+  if (g.ok)    html += `<div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:11px;margin-bottom:12px;font-size:13px;font-weight:600;color:#86EFAC">${g.ok}</div>`;
+
+  const related = DATA.catchup.filter(c=>g.catchupKeys&&g.catchupKeys.includes(c.subject));
+  if (related.length) {
+    html += `<div class="modal-sec-label">Needs Attention</div>`;
+    related.forEach(c => {
+      const col = c.action==='urgent'?'#FCA5A5':c.action==='talk'?'#FCD34D':'var(--subtext)';
+      html += `<div class="modal-item"><div class="modal-item-title" style="color:${col}">${c.title}</div>
+        <div class="modal-item-sub">Was due ${c.dueDate} — ${c.note}</div>
+        ${schoologyBtn(c.schoologyUrl)}</div>`;
+    });
+  }
+
+  const upcoming = [];
+  DATA.week.forEach(day=>day.items.filter(i=>i.subject===g.short&&!i.study).forEach(i=>upcoming.push({...i,date:day.date})));
+  if (upcoming.length) {
+    html += `<div class="modal-sec-label">Coming Up</div>`;
+    upcoming.forEach(i => {
+      const ds = new Date(i.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+      html += `<div class="modal-item"><div class="modal-item-title">${i.label}</div>
+        <div class="modal-item-sub">${ds} at ${i.time}</div>
+        ${schoologyBtn(i.schoologyUrl)}</div>`;
+    });
+  }
+  openDetailModal(g.full, html);
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+let _syncTimeout = null;
+
+// ── Schoology OAuth token handling ───────────────────────────────────────────
+// After OAuth, Schoology redirects to /#sc_at=TOKEN&sc_ats=SECRET&sc_user=NAME
+// We pick those up here, store in localStorage, then clean the URL.
+(function handleOAuthCallback() {
+  if (!location.hash || location.hash.length < 2) return;
+  const params = new URLSearchParams(location.hash.slice(1));
+  if (params.get('sc_at')) {
+    localStorage.setItem('sc_access_token',        params.get('sc_at'));
+    localStorage.setItem('sc_access_token_secret', params.get('sc_ats') || '');
+    localStorage.setItem('sc_user',                params.get('sc_user') || '');
+    history.replaceState(null, '', location.pathname); // clean URL
+  }
+  if (params.get('oauth_error')) {
+    console.warn('Schoology OAuth error:', params.get('oauth_error'));
+    history.replaceState(null, '', location.pathname);
+  }
+})();
+
+function _scToken()  { return localStorage.getItem('sc_access_token') || ''; }
+function _scSecret() { return localStorage.getItem('sc_access_token_secret') || ''; }
+function _scUser()   { return localStorage.getItem('sc_user') || ''; }
+function _scConnected() { return !!_scToken(); }
+
+// Update Sync button label to reflect connection state
+function checkSyncStatus() {
+  const lbl = document.getElementById('syncLabel');
+  const btn = document.getElementById('syncBtn');
+  if (!lbl || !btn) return;
+  if (_scConnected()) {
+    lbl.textContent = 'Sync';
+    btn.title = _scUser() ? `Synced as ${_scUser()}` : 'Sync Schoology';
+  } else {
+    lbl.textContent = 'Connect';
+    btn.title = 'Connect your Schoology account';
+  }
+}
+checkSyncStatus();
+
+// Merge synced Schoology data into the live DATA object and re-render
+function mergeSchoologyData(syncedData) {
+  if (!syncedData) return;
+  const today = syncedData.today;
+  const week  = syncedData.week;
+
+  // Today: append synced study items + agenda items (drop old synced ones first)
+  if (today && DATA.today) {
+    DATA.today.agenda = (DATA.today.agenda || []).filter(a => !a._synced).concat(today.agenda || []);
+    DATA.today.study  = (DATA.today.study  || []).filter(s => !s._synced).concat(today.study  || []);
+  }
+
+  // Week: for each day, replace synced study items with fresh ones, keep events
+  if (week && DATA.week) {
+    const byDate = {};
+    DATA.week.forEach(d => byDate[d.date] = d);
+    week.forEach(sd => {
+      if (byDate[sd.date]) {
+        byDate[sd.date].study = (byDate[sd.date].study || []).filter(s => !s._synced).concat(sd.study || []);
+      } else {
+        DATA.week.push(sd);
+      }
+    });
+    DATA.week.sort((a, b) => a.date < b.date ? -1 : 1);
+  }
+
+  // Alerts: replace old synced alerts
+  DATA.alerts = (DATA.alerts || []).filter(a => !a._synced).concat(syncedData.alerts || []);
+  DATA.lastUpdated = syncedData.lastUpdated || new Date().toISOString();
+
+  // Persist merged data to localStorage so it survives page refresh
+  try { localStorage.setItem('sc_last_data', JSON.stringify({ today: DATA.today, week: DATA.week, alerts: DATA.alerts, lastUpdated: DATA.lastUpdated })); } catch(_) {}
+}
+
+// On page load, restore last synced data so the app feels instant
+(function restoreLastSync() {
+  try {
+    const saved = localStorage.getItem('sc_last_data');
+    if (saved) mergeSchoologyData(JSON.parse(saved));
+  } catch(_) {}
+})();
+
+function runSync() {
+  const btn  = document.getElementById('syncBtn');
+  const lbl  = document.getElementById('syncLabel');
+  const spin = document.getElementById('syncSpinner');
+  if (!btn || btn.classList.contains('syncing')) return;
+
+  // Not connected → kick off OAuth flow (same tab so the redirect works cleanly)
+  if (!_scConnected()) {
+    window.location.href = '/api/auth';
+    return;
+  }
+
+  btn.className = 'sync-btn syncing';
+  spin.style.display = 'inline-block';
+  lbl.textContent = 'Syncing';
+
+  fetch('/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_token: _scToken(), access_token_secret: _scSecret() })
+  })
+  .then(r => r.json())
+  .then(resp => {
+    spin.style.display = 'none';
+    if (resp.ok && resp.data) {
+      // Update user name if returned
+      if (resp.data.user) localStorage.setItem('sc_user', resp.data.user);
+      mergeSchoologyData(resp.data);
+      renderAll();
+      btn.className = 'sync-btn ok';
+      lbl.textContent = resp.msg || 'Synced';
+      clearTimeout(_syncTimeout);
+      _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 2500);
+    } else if (resp.needs_auth) {
+      // Token expired — clear and re-auth
+      localStorage.removeItem('sc_access_token');
+      localStorage.removeItem('sc_access_token_secret');
+      btn.className = 'sync-btn err';
+      lbl.textContent = 'Re-connect';
+      clearTimeout(_syncTimeout);
+      _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 2500);
+    } else {
+      btn.className = 'sync-btn err';
+      lbl.textContent = resp.error || 'Error';
+      clearTimeout(_syncTimeout);
+      _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 3000);
+    }
+  })
+  .catch(err => {
+    spin.style.display = 'none';
+    btn.className = 'sync-btn err';
+    lbl.textContent = 'Failed';
+    clearTimeout(_syncTimeout);
+    _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 3000);
+  });
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function subjectColor(s) { return (DATA.subjects[s]||{color:'#6B7280'}).color; }
+
+function chip(subject) {
+  if (!subject) return '';
+  return `<span class="chip" style="background:${subjectColor(subject)}" data-filter="${subject}">${subject}</span>`;
+}
+
+function timerBadge(durStr, label) {
+  const m = durStr.match(/(\d+)/);
+  if (!m) return `<span class="badge badge-gray">${durStr}</span>`;
+  return `<span class="timer-badge" data-timer="${parseInt(m[1])}|${label||durStr}">${durStr}</span>`;
+}
+
+function getTimeMins(str) {
+  const m = str.match(/(\d+)(?::(\d+))?\s*(am|pm)/i);
+  if (!m) return -1;
+  let h=parseInt(m[1]); const min=parseInt(m[2]||'0'); const ap=m[3].toLowerCase();
+  if (ap==='pm'&&h!==12) h+=12;
+  if (ap==='am'&&h===12) h=0;
+  return h*60+min;
+}
+
+function formatDate(s) {
+  return new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h<12) return 'Good morning';
+  if (h<17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.getElementById('content').scrollTo(0,0);
+}
+
+function dismissAlert(id) {
+  const el = document.getElementById('alert-'+id);
+  if (!el) return;
+  el.classList.add('dismissing');
+  setTimeout(()=>el.remove(),280);
+  const d = JSON.parse(sessionStorage.getItem('da')||'[]');
+  d.push(id); sessionStorage.setItem('da',JSON.stringify(d));
+}
+
+// ============================================================
+// EVENT DELEGATION
+// ============================================================
+document.addEventListener('click', e => {
+  const tEl = e.target.closest('[data-timer]');
+  if (tEl) { const [m,l]=tEl.dataset.timer.split('|'); openTimer(parseInt(m),l); return; }
+
+  const fEl = e.target.closest('[data-filter]');
+  if (fEl) { filterSubject(fEl.dataset.filter); return; }
+
+  const dEl = e.target.closest('[data-detail]');
+  if (dEl && DETAILS[dEl.dataset.detail]) { const {title,html}=DETAILS[dEl.dataset.detail]; openDetailModal(title,html); return; }
+
+  const tabEl = e.target.closest('[data-tab]');
+  if (tabEl) { showTab(tabEl.dataset.tab); return; }
+
+  const planEl = e.target.closest('[data-plan]');
+  if (planEl) {
+    document.querySelectorAll('.tab-pill').forEach(p=>p.classList.remove('active'));
+    planEl.classList.add('active');
+    document.getElementById('planStudy').style.display   = planEl.dataset.plan==='study'?'block':'none';
+    document.getElementById('planCatchup').style.display = planEl.dataset.plan==='catchup'?'block':'none';
+    return;
+  }
+
+  if (e.target.closest('#syncBtn'))     { runSync(); return; }
+  if (e.target.closest('#addEventBtn')) { openAddEventModal(); return; }
+  if (e.target.id==='addEventSaveBtn')  { saveCustomEvent(); return; }
+  if (e.target.id==='addEventCloseBtn') { closeModal('addEventModal'); return; }
+  if (e.target===document.getElementById('addEventModal')) { closeModal('addEventModal'); return; }
+
+  const guideEl = e.target.closest('[data-guide-idx]');
+  if (guideEl) { generateStudyGuide(parseInt(guideEl.dataset.guideIdx), guideEl); return; }
+  if (e.target.id==='timerStartBtn')   { timerToggle(); return; }
+  if (e.target.id==='timerResetBtn')   { timerReset(); return; }
+  if (e.target.id==='timerCloseBtn')   { closeTimer(); return; }
+  if (e.target.id==='filterCloseBtn')  { closeModal('filterModal'); return; }
+  if (e.target.id==='detailCloseBtn')  { closeModal('detailModal'); return; }
+
+
+  ['filterModal','detailModal'].forEach(id=>{
+    if (e.target===document.getElementById(id)) closeModal(id);
+  });
+  if (e.target===document.getElementById('timerModal')) closeTimer();
+
+  const gcEl = e.target.closest('[data-grade-idx]');
+  if (gcEl) { openGradeDetail(parseInt(gcEl.dataset.gradeIdx)); return; }
+
+  const adEl = e.target.closest('[data-dismiss]');
+  if (adEl) { dismissAlert(adEl.dataset.dismiss); return; }
+});
+
+// ============================================================
+// RENDER TODAY  (two-column)
+// ============================================================
+function renderToday() {
+  const t = DATA.today;
+  document.getElementById('greeting').textContent  = getGreeting() + ', ' + DATA.profile.name;
+  document.getElementById('todayDate').textContent = formatDate(t.date);
+  if (!DATA.meta.calendarConnected) document.getElementById('calNote').style.display='block';
+
+  // Smart focus card (time-aware)
+  const sf = computeSmartFocus();
+  const _tagDot = `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${sf.tagColor};margin-right:5px;vertical-align:middle"></span>`;
+  document.getElementById('focusCardWrap').innerHTML = `
+    <div class="focus-card">
+      <div class="focus-label" style="color:rgba(255,255,255,0.75)">${_tagDot}${sf.tag}</div>
+      <div class="focus-title">${sf.title}</div>
+      <div class="focus-sub">${sf.note || ''}</div>
+      ${sf.duration ? `<div class="focus-duration" data-timer="${sf.duration}|${sf.title}">${sf.duration} min — tap to start timer</div>` : ''}
+      ${sf.subject ? `<div style="margin-top:10px">${chip(sf.subject)}</div>` : ''}
+    </div>`;
+  // Refresh every minute so recommendation stays current
+  if (!window._focusRefresher) {
+    window._focusRefresher = setInterval(() => {
+      const sf2 = computeSmartFocus();
+      const _d2 = `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${sf2.tagColor};margin-right:5px;vertical-align:middle"></span>`;
+      document.getElementById('focusCardWrap').innerHTML = `
+        <div class="focus-card">
+          <div class="focus-label" style="color:rgba(255,255,255,0.75)">${_d2}${sf2.tag}</div>
+          <div class="focus-title">${sf2.title}</div>
+          <div class="focus-sub">${sf2.note || ''}</div>
+          ${sf2.duration ? `<div class="focus-duration" data-timer="${sf2.duration}|${sf2.title}">${sf2.duration} min — tap to start timer</div>` : ''}
+          ${sf2.subject ? `<div style="margin-top:10px">${chip(sf2.subject)}</div>` : ''}
+        </div>`;
+    }, 60000);
+  }
+
+  // Alerts
+  const dismissed = JSON.parse(sessionStorage.getItem('da')||'[]');
+  let aHtml = '';
+  DATA.alerts.filter(a=>!dismissed.includes(a.id)).forEach(a=>{
+    aHtml += `<div class="alert-banner ${a.type}" id="alert-${a.id}">
+      <div class="alert-text">${a.text}</div>
+      <span class="alert-dismiss" data-dismiss="${a.id}">x</span>
+    </div>`;
+  });
+  document.getElementById('alertsWrap').innerHTML = aHtml;
+
+  // Two-column agenda
+  renderTodayCols();
+
+  // Due tomorrow (find by date, not label)
+  const _todayD = new Date(t.date + 'T12:00:00');
+  _todayD.setDate(_todayD.getDate() + 1);
+  const _tomorrowStr = _todayD.toISOString().split('T')[0];
+  const tom = DATA.week.find(d=>d.date===_tomorrowStr);
+  const tomItems = tom ? tom.items.filter(i=>!i.study) : [];
+  if (tomItems.length) {
+    document.getElementById('dueLabel').textContent = 'Due Tomorrow';
+    document.getElementById('dueCard').style.display = 'block';
+    let dHtml = '';
+    tomItems.forEach(item=>{
+      const color=subjectColor(item.subject);
+      let did='';
+      if (item.detail) did=reg(item.label,`<p style="font-size:13px;line-height:1.65;color:var(--subtext)">${item.detail}</p><div style="margin-top:12px">${chip(item.subject)}${schoologyBtn(item.schoologyUrl)}</div>`);
+      dHtml += `<div class="due-item"${did?` data-detail="${did}"`:''}>
+        <div style="width:3px;height:34px;background:${color};border-radius:2px;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${item.label}</div>
+          <div style="font-size:11px;color:var(--subtext);margin-top:2px">${item.subject||'—'} · ${item.time}</div>
+        </div>
+        ${did?'<div style="font-size:14px;color:var(--subtext)">›</div>':''}
+      </div>`;
+    });
+    document.getElementById('dueCard').innerHTML = dHtml;
+  } else {
+    document.getElementById('dueLabel').textContent = '';
+    document.getElementById('dueCard').style.display = 'none';
+  }
+
+}
+
+function renderTodayCols() {
+  const agenda = DATA.today.agenda;
+  const now = new Date();
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const nowLabel = `${now.getHours()%12||12}:${String(now.getMinutes()).padStart(2,'0')} ${now.getHours()>=12?'pm':'am'}`;
+
+  // Split into two groups
+  const dayEvents  = agenda.filter(a=>a.type==='event'||a.type==='block');
+  const studyItems = agenda.filter(a=>a.type==='study'||a.type==='hw');
+
+  function buildColItems(items, colLabel) {
+    let html = '';
+    let nowInserted = false;
+
+    items.forEach((block, i) => {
+      const color  = subjectColor(block.subject);
+      const bMins  = getTimeMins(block.start);
+      const nMins  = i < items.length-1 ? getTimeMins(items[i+1].start) : bMins+90;
+      const isNow  = bMins >= 0 && nowMins >= bMins && nowMins < nMins;
+
+      // Insert time line before this block if now falls before it
+      if (!nowInserted && bMins >= 0 && nowMins < bMins) {
+        html += `<div class="time-now-line"><div class="time-now-dot"></div><div class="time-now-bar"></div><div class="time-now-label">${nowLabel}</div></div>`;
+        nowInserted = true;
+      }
+
+      const tagsHtml  = (block.tags||[]).map(tg=>`<span class="badge ${tg.cls}">${tg.label}</span>`).join('');
+      const durBadge  = timerBadge(block.duration, block.title);
+      const scholBtn  = schoologyBtn(block.schoologyUrl);
+
+      const detailHtml = `<div class="modal-item"><div class="modal-item-title">Time</div><div class="modal-item-sub">${block.start} · ${block.duration}</div></div>
+        <div class="modal-item"><div class="modal-item-title">Notes</div><div class="modal-item-sub">${block.note}</div></div>
+        ${block.subject?`<div class="modal-item"><div class="modal-item-title">Subject</div><div class="modal-item-sub">${chip(block.subject)}</div></div>`:''}
+        <div style="margin-top:10px">${scholBtn}</div>`;
+      const did = reg(block.title, detailHtml);
+
+      html += `<div class="col-item${isNow?' col-item-now':''}" style="border-left-color:${isNow?'var(--accent)':color}" data-detail="${did}">
+        <div class="col-item-title">${block.title}</div>
+        <div class="col-item-time">${block.start}</div>
+        <div class="col-item-footer">${chip(block.subject)}${tagsHtml}${durBadge}</div>
+        ${scholBtn ? `<div style="margin-top:6px">${scholBtn}</div>` : ''}
+      </div>`;
+
+      // Insert time line after this block if now is during it
+      if (!nowInserted && isNow) {
+        // already highlighted — skip line
+        nowInserted = true;
+      }
+    });
+
+    if (!items.length) {
+      html = `<div style="font-size:12px;color:var(--subtext);padding:10px 4px;font-weight:500">Nothing scheduled</div>`;
+    }
+    return html;
+  }
+
+  document.getElementById('todayCols').innerHTML = `
+    <div class="col-panel" id="colDay">${buildColItems(dayEvents,'day')}</div>
+    <div class="col-panel" id="colStudy">${buildColItems(studyItems,'study')}</div>`;
+  makeDraggable(document.getElementById('colDay'));
+  makeDraggable(document.getElementById('colStudy'));
+}
+
+// ============================================================
+// RENDER WEEK  (day cards with events/study split)
+// ============================================================
+function renderWeek() {
+  const today = DATA.today.date;
+  const weeks = getMergedWeek();
+  const first = new Date(weeks[0].date+'T12:00:00');
+  const last  = new Date(weeks[weeks.length-1].date+'T12:00:00');
+  document.getElementById('weekRange').textContent =
+    first.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+    last.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  let weekHtml = '';
+  weeks.forEach(day => {
+    const isToday = day.date === today;
+    const dayNum  = new Date(day.date+'T12:00:00').getDate();
+    const numHtml = isToday ? `<span class="today-num-circle">${dayNum}</span>` : dayNum;
+
+    const events = day.items.filter(i=>!i.study);
+    const study  = day.items.filter(i=>i.study);
+    const hasBoth = events.length > 0 && study.length > 0;
+
+    let itemsHtml = '';
+
+    if (events.length) {
+      itemsHtml += events.map(item=>{
+        const color = subjectColor(item.subject);
+        let did='';
+        if (item.detail||item.schoologyUrl) {
+          const dHtml=`<div class="modal-item"><div class="modal-item-title">${item.label}</div><div class="modal-item-sub">${item.detail||''}</div><div style="margin-top:8px">${chip(item.subject)}${schoologyBtn(item.schoologyUrl)}</div></div>`;
+          did=reg(item.label,dHtml);
+        }
+        const attrs = did?`data-detail="${did}"`:item.subject?`data-filter="${item.subject}"`:'';
+        return `<div class="day-item" style="border-left-color:${color}" ${attrs} data-study="0">
+          ${item.label}
+          <div class="day-item-time">${item.time}</div>
+        </div>`;
+      }).join('');
+    }
+
+    if (hasBoth) {
+      itemsHtml += `<div class="day-divider"></div><div class="day-section-label">Study</div>`;
+    }
+
+    if (study.length) {
+      itemsHtml += study.map(item=>{
+        const color = subjectColor(item.subject);
+        const attrs = item.subject?`data-filter="${item.subject}"`:'';
+        return `<div class="day-item day-study-item" style="border-left-color:var(--accent)" ${attrs} data-study="1">
+          ${item.label}
+          <div class="day-item-time">${item.time}</div>
+        </div>`;
+      }).join('');
+    }
+
+    if (!events.length && !study.length) {
+      itemsHtml = `<div style="font-size:9px;color:var(--subtext);text-align:center;padding:8px 0">Free</div>`;
+    }
+
+    weekHtml += `<div class="day-col ${isToday?'today':''}">
+      <div class="day-header">
+        <div class="day-name">${day.day}</div>
+        <div class="day-num">${numHtml}</div>
+      </div>
+      ${itemsHtml}
+    </div>`;
+  });
+  document.getElementById('weekRow').innerHTML = weekHtml;
+  // Make each day column's items draggable
+  document.querySelectorAll('.day-col').forEach(col => makeDraggableWeekCol(col));
+
+  // Upcoming list (events only)
+  let upHtml = '';
+  weeks.forEach(day=>{
+    day.items.filter(i=>!i.study).forEach(item=>{
+      const color=subjectColor(item.subject);
+      const ds=new Date(day.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+      let did='';
+      if (item.detail||item.schoologyUrl) {
+        const dHtml=`<div class="modal-item"><div class="modal-item-title">${item.label}</div><div class="modal-item-sub">${item.detail||''}</div><div style="margin-top:8px">${chip(item.subject)}${schoologyBtn(item.schoologyUrl)}</div></div>`;
+        did=reg(item.label,dHtml);
+      }
+      const attrs=did?`data-detail="${did}"`:item.subject?`data-filter="${item.subject}"`:'';
+      upHtml += `<div class="upcoming-item" ${attrs}>
+        <div style="width:4px;height:36px;background:${color};border-radius:2px;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${item.label}</div>
+          <div style="font-size:11px;color:var(--subtext);margin-top:2px">${item.subject||'—'} · ${ds} at ${item.time}</div>
+        </div>
+        <div style="font-size:15px;color:var(--subtext)">›</div>
+      </div>`;
+    });
+  });
+  document.getElementById('upcomingList').innerHTML = upHtml;
+  makeDraggable(document.getElementById('upcomingList'));
+}
+
+// ============================================================
+// RENDER PLAN
+// ============================================================
+function renderPlan() {
+  let studyHtml = '';
+  DATA.studyPlan.forEach(plan=>{
+    const color=subjectColor(plan.subject);
+    const wBadge=plan.weight==='MAJOR'?`<span class="badge badge-major">MAJOR</span>`:`<span class="badge badge-gray">MINOR</span>`;
+    studyHtml += `<div class="card" style="margin-bottom:12px">
+      <div class="plan-header">
+        <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        ${chip(plan.subject)}
+        <div class="plan-title">${plan.title}</div>${wBadge}
+        <div class="plan-due">${plan.due}</div>
+      </div>`;
+    if (plan.warning) studyHtml+=`<div class="plan-warning">${plan.warning}</div>`;
+    studyHtml+=`<div class="divider"></div>`;
+    studyHtml+=`<div class="sessions-wrap" id="sessions-${DATA.studyPlan.indexOf(plan)}">`;
+    plan.sessions.forEach(s=>{
+      studyHtml+=`<div class="session-row">
+        <div class="session-day ${s.isToday?'today':''}">${s.day} ${s.date}</div>
+        <div class="session-bar"><div class="session-text">${s.focus}</div></div>
+        ${timerBadge(s.duration,s.focus)}
+      </div>`;
+    });
+    studyHtml+=`</div>`;
+    studyHtml+=`<div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      ${plan.schoologyUrl?schoologyBtn(plan.schoologyUrl):''}
+      <button class="guide-btn" data-guide-idx="${DATA.studyPlan.indexOf(plan)}">Generate Study Guide</button>
+    </div>`;
+    studyHtml+=`</div>`;
+  });
+  document.getElementById('planStudy').innerHTML=studyHtml;
+  document.querySelectorAll('.sessions-wrap').forEach(w => makeDraggable(w));
+
+  function catchupSection(title, items, dot) {
+    if (!items.length) return '';
+    let h=`<div class="section-label" style="margin-top:16px;margin-bottom:4px">${title}</div><div class="card">`;
+    items.forEach(item=>{
+      const color=subjectColor(item.subject);
+      h+=`<div class="catchup-item" data-filter="${item.subject}">
+        <div class="catchup-icon" style="background:${color}22;color:${color};">${dot}</div>
+        <div style="flex:1">
+          <div class="catchup-title">${item.title}</div>
+          <div class="catchup-meta">${item.subject} · was due ${item.dueDate}</div>
+          <div class="catchup-note">${item.note}</div>
+          ${item.schoologyUrl?`<div style="margin-top:6px">${schoologyBtn(item.schoologyUrl)}</div>`:''}
+        </div>
+        <div style="font-size:15px;color:var(--subtext)">›</div>
+      </div>`;
+    });
+    h+='</div>';
+    return h;
+  }
+
+  document.getElementById('planCatchup').innerHTML =
+    catchupSection('Act Now',         DATA.catchup.filter(c=>c.action==='urgent'), '!') +
+    catchupSection('Talk to Teacher', DATA.catchup.filter(c=>c.action==='talk'),   '?') +
+    catchupSection('Try Submitting',  DATA.catchup.filter(c=>c.action==='soft'),   '~');
+  document.querySelectorAll('#planCatchup .card').forEach(c => makeDraggable(c));
+}
+
+// ============================================================
+// RENDER GRADES
+// ============================================================
+function renderGrades() {
+  document.getElementById('gradesDate').textContent =
+    'As of '+new Date(DATA.meta.lastUpdated).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+  let aHtml='';
+  DATA.grades.filter(g=>g.alert).forEach(g=>{
+    aHtml+=`<div class="alert-banner amber" style="margin-bottom:8px">
+      <div class="alert-text"><b>${g.full}:</b> ${g.alert}</div>
+    </div>`;
+  });
+  document.getElementById('gradeAlerts').innerHTML=aHtml;
+
+  let gHtml='';
+  DATA.grades.forEach((g,idx)=>{
+    const color=subjectColor(g.short);
+    const fs=g.grade.length>4?'20px':'28px';
+    gHtml+=`<div class="grade-card" style="border-top:3px solid ${color}" data-grade-idx="${idx}">
+      <div class="grade-subject">${g.short}</div>
+      <div class="grade-value" style="color:${color};font-size:${fs}">${g.letter||g.grade}</div>
+      <div class="grade-pct">${g.grade!==g.letter?g.grade:g.full}</div>
+      ${g.alert?`<div class="grade-alert">${g.alert}</div>`:''}
+      ${g.ok?`<div class="grade-ok">${g.ok}</div>`:''}
+      <div class="grade-hint">tap for details</div>
+    </div>`;
+  });
+  document.getElementById('gradeGrid').innerHTML=gHtml;
+}
+
+// ============================================================
+// CUSTOM EVENTS  (localStorage — survives sync task updates)
+// ============================================================
+function getCustomEvents() {
+  try { return JSON.parse(localStorage.getItem('customEvents') || '[]'); } catch(e) { return []; }
+}
+function saveCustomEvents(arr) {
+  localStorage.setItem('customEvents', JSON.stringify(arr));
+}
+
+// Merge custom events into DATA.week at render time (non-destructive)
+function getMergedWeek() {
+  const custom = getCustomEvents();
+  // Deep clone week so we don't mutate DATA
+  const week = DATA.week.map(d => ({ ...d, items: [...d.items] }));
+  custom.forEach(ev => {
+    const day = week.find(d => d.date === ev.date);
+    if (day) {
+      const isStudy = ev.type === 'study';
+      day.items.push({
+        subject: ev.subject || null,
+        label:   ev.title + (ev.custom ? '' : ''),
+        time:    ev.timeDisplay,
+        study:   isStudy,
+        custom:  true,
+        note:    ev.note || ''
+      });
+      // Sort items by time
+      day.items.sort((a, b) => {
+        const ta = getTimeMins(a.time), tb = getTimeMins(b.time);
+        if (ta < 0 && tb < 0) return 0;
+        if (ta < 0) return 1;
+        if (tb < 0) return -1;
+        return ta - tb;
+      });
+    }
+  });
+  return week;
+}
+
+function openAddEventModal() {
+  // Populate date select
+  const sel = document.getElementById('evDate');
+  sel.innerHTML = '';
+  DATA.week.forEach(day => {
+    const d = new Date(day.date + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const opt = document.createElement('option');
+    opt.value = day.date;
+    opt.textContent = label + (day.label === 'Today' ? ' (Today)' : '');
+    sel.appendChild(opt);
+  });
+  // Populate subject select
+  const subSel = document.getElementById('evSubject');
+  subSel.innerHTML = '<option value="">— none —</option>';
+  Object.keys(DATA.subjects).forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key; opt.textContent = key + ' — ' + DATA.subjects[key].full;
+    subSel.appendChild(opt);
+  });
+  document.getElementById('evTitle').value = '';
+  document.getElementById('evNote').value  = '';
+  openModal('addEventModal');
+}
+
+function saveCustomEvent() {
+  const title = document.getElementById('evTitle').value.trim();
+  if (!title) { document.getElementById('evTitle').focus(); return; }
+  const date    = document.getElementById('evDate').value;
+  const timeVal = document.getElementById('evTime').value;          // "HH:MM"
+  const subject = document.getElementById('evSubject').value || null;
+  const type    = document.getElementById('evType').value;
+  const note    = document.getElementById('evNote').value.trim();
+
+  // Format display time
+  const [hh, mm] = timeVal.split(':').map(Number);
+  const ampm  = hh >= 12 ? 'pm' : 'am';
+  const h12   = hh % 12 || 12;
+  const timeDisplay = `${h12}:${String(mm).padStart(2,'0')}${ampm}`;
+
+  const ev = { id: 'ce_' + Date.now(), date, timeVal, timeDisplay, title, subject, type, note, custom: true };
+  const arr = getCustomEvents();
+  arr.push(ev);
+  saveCustomEvents(arr);
+
+  closeModal('addEventModal');
+  renderWeek(); // refresh
+}
+
+// ============================================================
+// GENERATE STUDY GUIDE
+// ============================================================
+function generateStudyGuide(planIdx, btnEl) {
+  const plan = DATA.studyPlan[planIdx];
+  if (!plan) return;
+  btnEl.classList.add('loading');
+  btnEl.textContent = 'Building...';
+
+  setTimeout(() => {
+    try {
+      const html = buildStudyGuideHTML(plan);
+      const blob = new Blob([html], { type: 'text/html' });
+      const url  = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch(err) {
+      console.error(err);
+    }
+    btnEl.classList.remove('loading');
+    btnEl.textContent = 'Generate Study Guide';
+  }, 80);
+}
+
+function buildStudyGuideHTML(plan) {
+  const color   = subjectColor(plan.subject);
+  const subject = DATA.subjects[plan.subject] || { full: plan.subject };
+
+  // Gather related data
+  const catchItems  = DATA.catchup.filter(c => c.subject === plan.subject);
+  const agendaItems = DATA.today.agenda.filter(a => a.subject === plan.subject);
+  const weekItems   = [];
+  DATA.week.forEach(day => day.items.filter(i => i.subject === plan.subject && !i.study)
+    .forEach(i => weekItems.push({ ...i, date: day.date })));
+
+  // Build sessions timeline HTML
+  const sessionsHTML = plan.sessions.map((s, i) => `
+    <div style="display:flex;gap:14px;margin-bottom:8px;align-items:flex-start">
+      <div style="width:24px;height:24px;border-radius:50%;background:#ECEAFE;border:1px solid #8B82E8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#5B4FD8;flex-shrink:0;margin-top:12px">${i+1}</div>
+      <div style="flex:1">
+        <div class="accordion">
+          <button class="acc-head" onclick="toggleAcc(this)">
+            <span>${s.day} ${s.date} — ${s.focus}</span>
+            <span class="acc-icon">+</span>
+          </button>
+          <div class="acc-body">
+            <p><strong>Duration:</strong> ${s.duration}</p>
+            <p style="margin-top:8px">Focus: ${s.focus}</p>
+            <p style="margin-top:10px;color:#6B6560">Use this session to work through the material systematically. Check off as you go.</p>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Build topics from session focus lines
+  const topics = plan.sessions.map(s => s.focus);
+  const topicsHTML = topics.map(t => `
+    <div class="accordion">
+      <button class="acc-head" onclick="toggleAcc(this)"><span>${t}</span><span class="acc-icon">+</span></button>
+      <div class="acc-body">
+        <p style="color:#6B6560">Add your notes here as you study this topic.</p>
+        <div style="margin-top:12px;padding:12px;background:#F7F5F0;border-radius:8px;min-height:60px;font-size:13px;color:#9C9690;font-style:italic">Your notes...</div>
+      </div>
+    </div>`).join('');
+
+  // Build flashcard deck from whatever we know
+  const cards = plan.sessions.map(s => ({
+    term: s.focus.split(':')[0].trim(),
+    def:  s.focus,
+    cat:  plan.subject
+  }));
+
+  // Aggressively build practice Qs from session topics
+  const practiceQs = plan.sessions.map((s, i) => ({
+    q: `Explain in your own words: ${s.focus}`,
+    hint: `Think about what you covered in session ${i+1}.`
+  }));
+
+  const cardsJSON = JSON.stringify(cards).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const qsJSON    = JSON.stringify(practiceQs).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Total study time
+  const totalMins = plan.sessions.reduce((sum, s) => {
+    const m = s.duration.match(/(\d+)/);
+    return sum + (m ? parseInt(m[1]) : 0);
+  }, 0);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${plan.subject} — ${plan.title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#F7F5F0;--surface:#FFFFFF;--surface2:#F0EDE6;
+    --border:#D8D3C8;--border2:#C5BFB2;
+    --text:#1A1814;--text2:#6B6560;--text3:#9C9690;
+    --purple:#5B4FD8;--purple-light:#ECEAFE;--purple-mid:#8B82E8;
+    --teal:#0F7A5A;--teal-light:#E2F4EE;
+    --amber:#A05A1A;--amber-light:#FDF0E0;
+    --coral:#C04030;--coral-light:#FDECEA;
+    --green:#2D6B1A;--green-light:#EBF4E5;
+    --accent:${color};
+    --radius:10px;--radius-lg:14px;
+  }
+  html{font-size:16px}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:2rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+  .main{flex:1;padding:2.5rem 3rem;max-width:860px}
+  .logo{margin-bottom:2rem}
+  .logo-unit{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+  .logo-title{font-family:'Instrument Serif',serif;font-size:17px;color:var(--text);line-height:1.3}
+  .nav-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:1.5rem 0 .5rem}
+  .nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border-radius:var(--radius);border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;color:var(--text2);text-align:left;transition:all .15s}
+  .nav-btn:hover{background:var(--surface2);color:var(--text)}
+  .nav-btn.active{background:var(--purple-light);color:var(--purple);font-weight:500}
+  .nav-btn .nav-icon{font-size:14px;width:18px;text-align:center}
+  .sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)}
+  .test-info{font-size:11px;color:var(--text3);line-height:1.6}
+  .test-info strong{color:var(--text2)}
+  .page-header{margin-bottom:2rem}
+  .page-header h1{font-family:'Instrument Serif',serif;font-size:32px;font-weight:400;color:var(--text);margin-bottom:4px}
+  .page-header p{font-size:14px;color:var(--text2)}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem}
+  .section-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:2rem 0 .75rem}
+  .section-label:first-child{margin-top:0}
+  .stat-row{display:flex;gap:10px;margin-bottom:1.5rem}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;flex:1}
+  .stat-num{font-family:'Instrument Serif',serif;font-size:36px;color:var(--purple);line-height:1;margin-bottom:4px}
+  .stat-desc{font-size:12px;color:var(--text2)}
+  .accordion{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+  .acc-head{padding:13px 16px;cursor:pointer;font-size:14px;font-weight:500;display:flex;justify-content:space-between;align-items:center;background:var(--surface);transition:background .1s;border:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;color:var(--text)}
+  .acc-head:hover{background:var(--surface2)}
+  .acc-icon{font-size:16px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+  .acc-head.open .acc-icon{transform:rotate(45deg)}
+  .acc-body{padding:12px 16px 14px;font-size:13px;line-height:1.75;color:var(--text2);border-top:1px solid var(--border);background:var(--bg);display:none}
+  .acc-body.show{display:block}
+  .btn{padding:8px 18px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text);transition:all .15s}
+  .btn:hover{background:var(--surface2);border-color:var(--border2)}
+  .btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
+  .btn-purple:hover{background:#4840c4;border-color:#4840c4}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  .fc-controls{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+  .fc-wrap{perspective:900px;height:200px;cursor:pointer;margin-bottom:1rem;user-select:none}
+  .fc-inner{width:100%;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;position:relative}
+  .fc-wrap.flipped .fc-inner{transform:rotateY(180deg)}
+  .fc-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--radius-lg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;flex-direction:column}
+  .fc-front{background:var(--surface)}
+  .fc-back{transform:rotateY(180deg);background:var(--purple-light);border-color:var(--purple-mid)}
+  .fc-term{font-family:'Instrument Serif',serif;font-size:24px;color:var(--text);margin-bottom:6px}
+  .fc-def{font-size:14px;color:#3730A3;line-height:1.7}
+  .fc-nav{display:flex;align-items:center;gap:10px}
+  .fc-progress{flex:1;height:3px;background:var(--surface2);border-radius:3px;overflow:hidden}
+  .fc-progress-fill{height:100%;background:var(--purple);border-radius:3px;transition:width .3s}
+  .fc-count{font-size:12px;color:var(--text3);white-space:nowrap}
+  .subject-pill{display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:${color}22;color:${color};border:1px solid ${color}44;margin-bottom:.5rem}
+  .checklist-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+  .checklist-item:last-child{border-bottom:none}
+  .checklist-item input[type=checkbox]{margin-top:3px;accent-color:var(--purple);width:16px;height:16px;flex-shrink:0;cursor:pointer}
+  .notes-area{width:100%;min-height:90px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);resize:vertical;line-height:1.6;margin-top:4px}
+  .notes-area:focus{outline:none;border-color:var(--purple-mid)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:768px){.sidebar{display:none}.main{padding:1.5rem}.stat-row{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-unit">${plan.subject} · ${plan.weight}</div>
+      <div class="logo-title">${plan.title}</div>
+    </div>
+    <div class="nav-label">Study tools</div>
+    <button class="nav-btn active" onclick="showTab('overview')"><span class="nav-icon">◎</span> Overview</button>
+    <button class="nav-btn" onclick="showTab('sessions')"><span class="nav-icon">◇</span> Study Sessions</button>
+    <button class="nav-btn" onclick="showTab('topics')"><span class="nav-icon">☰</span> Topics</button>
+    <button class="nav-btn" onclick="showTab('flashcards')"><span class="nav-icon">⬚</span> Flashcards</button>
+    <button class="nav-btn" onclick="showTab('practice')"><span class="nav-icon">★</span> Practice</button>
+    <div class="sidebar-footer">
+      <div class="test-info">
+        <strong>Due</strong><br>${plan.due}<br><br>
+        <strong>Total study time</strong><br>${totalMins} min across ${plan.sessions.length} session${plan.sessions.length!==1?'s':''}
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="page-header">
+        <div class="subject-pill">${plan.subject} · ${subject.full}</div>
+        <h1>${plan.title}</h1>
+        <p>Due ${plan.due} · ${plan.weight} assessment</p>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num">${plan.sessions.length}</div><div class="stat-desc">Study sessions planned</div></div>
+        <div class="stat-card"><div class="stat-num">${totalMins}</div><div class="stat-desc">Total minutes of prep</div></div>
+        <div class="stat-card"><div class="stat-num">${plan.weight==='MAJOR'?'Hi':'Med'}</div><div class="stat-desc">Priority — ${plan.weight} assessment</div></div>
+      </div>
+      ${plan.warning?`<div style="background:#FDF0E0;border:1px solid #D4903A;border-radius:10px;padding:12px 16px;margin-bottom:1.5rem;font-size:13px;color:#A05A1A;font-weight:500">${plan.warning}</div>`:''}
+      <div class="section-label">Key topics to cover</div>
+      ${topics.map(t=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px"><span style="color:var(--purple);font-size:18px">·</span>${t}</div>`).join('')}
+      <div class="section-label" style="margin-top:2rem">Your notes on this assignment</div>
+      <textarea class="notes-area" placeholder="Add your own notes, questions, or reminders here..."></textarea>
+    </div>
+
+    <!-- STUDY SESSIONS -->
+    <div id="tab-sessions" class="tab-content">
+      <div class="page-header">
+        <h1>Study sessions</h1>
+        <p>Your planned prep schedule — check off as you complete each one</p>
+      </div>
+      <div class="section-label">Session checklist</div>
+      <div class="card">
+        ${plan.sessions.map((s,i)=>`<div class="checklist-item">
+          <input type="checkbox" onchange="this.parentElement.style.opacity=this.checked?'0.45':'1'">
+          <div>
+            <div style="font-weight:500">${s.day} ${s.date} — ${s.duration}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px">${s.focus}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div class="section-label" style="margin-top:1.5rem">Session breakdown</div>
+      ${sessionsHTML}
+    </div>
+
+    <!-- TOPICS -->
+    <div id="tab-topics" class="tab-content">
+      <div class="page-header">
+        <h1>Topics</h1>
+        <p>Expand each topic to add your own notes</p>
+      </div>
+      <div class="section-label">Study topics</div>
+      ${topicsHTML}
+      <div class="section-label" style="margin-top:1.5rem">Your running notes</div>
+      <textarea class="notes-area" style="min-height:140px" placeholder="Anything that doesn't fit the topics above..."></textarea>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div id="tab-flashcards" class="tab-content">
+      <div class="page-header">
+        <h1>Flashcards</h1>
+        <p>Click a card to reveal — swipe through all topics</p>
+      </div>
+      <div class="fc-controls">
+        <button class="btn btn-sm" onclick="fcPrev()">Prev</button>
+        <button class="btn btn-sm btn-purple" onclick="fcFlip()">Flip</button>
+        <button class="btn btn-sm" onclick="fcNext()">Next</button>
+      </div>
+      <div class="fc-wrap" id="fcWrap" onclick="fcFlip()">
+        <div class="fc-inner" id="fcInner">
+          <div class="fc-face fc-front"><div class="fc-term" id="fcTerm"></div><div id="fcCat"></div><div class="fc-hint" style="font-size:11px;color:var(--text3);margin-top:8px">tap to flip</div></div>
+          <div class="fc-face fc-back"><div class="fc-def" id="fcDef"></div></div>
+        </div>
+      </div>
+      <div class="fc-nav">
+        <div class="fc-progress"><div class="fc-progress-fill" id="fcFill"></div></div>
+        <div class="fc-count" id="fcCount"></div>
+      </div>
+    </div>
+
+    <!-- PRACTICE -->
+    <div id="tab-practice" class="tab-content">
+      <div class="page-header">
+        <h1>Practice questions</h1>
+        <p>Work through these before the ${plan.weight.toLowerCase()} — write your answers below each</p>
+      </div>
+      <div id="practiceQs"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const CARDS=${cardsJSON};
+const PQS=${qsJSON};
+let fcIdx=0;
+
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(id==='flashcards') renderFC();
+  if(id==='practice') renderPractice();
+}
+function toggleAcc(btn){
+  const body=btn.nextElementSibling;
+  btn.classList.toggle('open');
+  body.classList.toggle('show');
+}
+function renderFC(){
+  if(!CARDS.length) return;
+  const c=CARDS[fcIdx];
+  document.getElementById('fcTerm').textContent=c.term;
+  document.getElementById('fcDef').textContent=c.def;
+  document.getElementById('fcCount').textContent=(fcIdx+1)+' / '+CARDS.length;
+  document.getElementById('fcFill').style.width=((fcIdx+1)/CARDS.length*100)+'%';
+  document.getElementById('fcWrap').classList.remove('flipped');
+}
+function fcFlip(){ document.getElementById('fcWrap').classList.toggle('flipped'); }
+function fcNext(){ fcIdx=(fcIdx+1)%CARDS.length; renderFC(); }
+function fcPrev(){ fcIdx=(fcIdx-1+CARDS.length)%CARDS.length; renderFC(); }
+function renderPractice(){
+  const cont=document.getElementById('practiceQs');
+  if(cont.children.length) return;
+  PQS.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.style.marginBottom='12px';
+    d.innerHTML='<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Question '+(i+1)+'</div>'
+      +'<div style="font-size:15px;line-height:1.6;color:var(--text);margin-bottom:12px">'+q.q+'</div>'
+      +'<textarea class="notes-area" placeholder="Your answer..."></textarea>'
+      +(q.hint?'<div style="font-size:12px;color:var(--text3);margin-top:8px;font-style:italic">Hint: '+q.hint+'</div>':'');
+    cont.appendChild(d);
+  });
+}
+renderFC();
+<\/script>
+</body>
+</html>`;
+}
+
+
+// ============================================================
+// SMART FOCUS  (time-aware, no past items)
+// ============================================================
+function computeSmartFocus() {
+  const now      = new Date();
+  const nowMins  = now.getHours() * 60 + now.getMinutes();
+  const agenda   = DATA.today.agenda;
+
+  function durMins(str) {
+    const m = (str || '').match(/(\d+)/);
+    return m ? parseInt(m[1]) : 45;
+  }
+
+  // 1. Something happening RIGHT NOW (event/block only — don't say "do this" if it's happening)
+  for (const item of agenda) {
+    const start = getTimeMins(item.start);
+    if (start < 0) continue;
+    const end = start + durMins(item.duration);
+    if (nowMins >= start && nowMins < end && (item.type === 'event' || item.type === 'block')) {
+      return {
+        tag: 'Happening now', tagColor: '#F87171',
+        title: item.title, note: item.note,
+        subject: item.subject, duration: null
+      };
+    }
+  }
+
+  // 2. Upcoming study/hw items (not past, not too far in future)
+  const pendingStudy = agenda
+    .filter(a => {
+      const m = getTimeMins(a.start);
+      return (a.type === 'study' || a.type === 'hw') && (m < 0 || m >= nowMins - 20);
+    })
+    .sort((a, b) => {
+      // Items with explicit upcoming time first, then unscheduled
+      const ma = getTimeMins(a.start), mb = getTimeMins(b.start);
+      if (ma >= 0 && mb >= 0) return ma - mb;
+      if (ma >= 0 && ma <= nowMins + 90) return -1;
+      if (mb >= 0 && mb <= nowMins + 90) return 1;
+      // MAJOR tags sort before others
+      const aM = (a.tags||[]).some(t=>t.label==='MAJOR') ? 0 : 1;
+      const bM = (b.tags||[]).some(t=>t.label==='MAJOR') ? 0 : 1;
+      return aM - bM;
+    });
+
+  // What's the next hard event so we can show free-time context?
+  const nextEvent = agenda
+    .filter(a => (a.type === 'event' || a.type === 'block') && getTimeMins(a.start) > nowMins + 5)
+    .sort((a, b) => getTimeMins(a.start) - getTimeMins(b.start))[0];
+
+  if (pendingStudy.length > 0) {
+    const item = pendingStudy[0];
+    const startM = getTimeMins(item.start);
+    const isMajor = (item.tags||[]).some(t=>t.label==='MAJOR');
+    let note = item.note;
+    if (nextEvent) {
+      const gap = getTimeMins(nextEvent.start) - nowMins;
+      if (gap > 0 && gap <= 150) {
+        note = gap + ' min free before ' + nextEvent.title + '. ' + item.note;
+      }
+    }
+    const tag = isMajor ? 'MAJOR — do now' : (startM > 0 && startM > nowMins ? 'Coming up ' + item.start : 'Do now');
+    return {
+      tag, tagColor: isMajor ? '#C4B5FD' : '#818CF8',
+      title: item.title, note,
+      subject: item.subject, duration: durMins(item.duration)
+    };
+  }
+
+  // 3. Today's study plan sessions
+  for (const plan of DATA.studyPlan) {
+    for (const session of plan.sessions) {
+      if (session.isToday) {
+        return {
+          tag: plan.weight === 'MAJOR' ? 'MAJOR — planned' : 'Planned today',
+          tagColor: plan.weight === 'MAJOR' ? '#C4B5FD' : '#818CF8',
+          title: plan.title, note: session.focus,
+          subject: plan.subject, duration: durMins(session.duration)
+        };
+      }
+    }
+  }
+
+  // 4. Most urgent upcoming study plan (within 2 days)
+  const todayDate = new Date(DATA.today.date + 'T12:00:00');
+  const urgentPlan = DATA.studyPlan
+    .filter(p => p.sessions.some(s => !s.isToday))
+    .sort((a, b) => {
+      const wa = a.weight === 'MAJOR' ? 0 : 1;
+      const wb = b.weight === 'MAJOR' ? 0 : 1;
+      return wa - wb;
+    })[0];
+
+  if (urgentPlan) {
+    const nextSess = urgentPlan.sessions.find(s => !s.isToday);
+    if (nextSess) {
+      return {
+        tag: 'Coming up — ' + nextSess.day + ' ' + nextSess.date,
+        tagColor: '#94A3B8',
+        title: urgentPlan.title, note: nextSess.focus,
+        subject: urgentPlan.subject, duration: durMins(nextSess.duration)
+      };
+    }
+  }
+
+  // 5. Fallback
+  const f = DATA.today.focusTask;
+  return { tag: 'Focus', tagColor: '#818CF8', title: f.title, note: f.note, subject: f.subject, duration: f.duration };
+}
+
+
+// ============================================================
+// DRAG & DROP  (container-level delegation + nearest-item fallback)
+// ============================================================
+let _dragSrc = null;
+let _dragLastTarget = null; // tracks last valid drop target even when cursor drifts over gaps
+const _skipClasses = new Set(['day-header','time-now-line','day-divider','day-section-label','drag-handle']);
+
+// When cursor is over a non-draggable gap (divider, label), snap to nearest item by Y
+function _nearestDraggable(container, clientY) {
+  const items = [...container.children].filter(el => el.getAttribute('draggable') === 'true');
+  let nearest = null, nearestDist = Infinity;
+  for (const el of items) {
+    const box = el.getBoundingClientRect();
+    const center = box.top + box.height / 2;
+    const dist = Math.abs(clientY - center);
+    if (dist < nearestDist) { nearestDist = dist; nearest = el; }
+  }
+  return nearest;
+}
+
+function makeDraggable(container) {
+  if (!container || container._dragReady) return;
+  container._dragReady = true;
+
+  // Mark and decorate draggable children
+  [...container.children].forEach(item => {
+    if ([...item.classList].some(c => _skipClasses.has(c))) return;
+    item.setAttribute('draggable', 'true');
+    if (!item.querySelector('.drag-handle')) {
+      const h = document.createElement('span');
+      h.className = 'drag-handle';
+      h.setAttribute('aria-hidden', 'true');
+      h.textContent = '⠿';
+      item.appendChild(h);
+    }
+  });
+
+  container.addEventListener('dragstart', e => {
+    const item = e.target.closest('[draggable="true"]');
+    if (!item || item.parentNode !== container) return;
+    _dragSrc = item;
+    _dragLastTarget = null;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+    setTimeout(() => { if (_dragSrc) _dragSrc.classList.add('drag-dragging'); }, 0);
+  });
+
+  container.addEventListener('dragend', () => {
+    container.querySelectorAll('.drag-over, .drag-dragging').forEach(el =>
+      el.classList.remove('drag-over', 'drag-dragging'));
+    _dragSrc = null;
+    _dragLastTarget = null;
+  });
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    // Try direct hit first, fall back to nearest item
+    let target = e.target.closest('[draggable="true"]');
+    if (!target || target.parentNode !== container) target = _nearestDraggable(container, e.clientY);
+    if (target && target !== _dragSrc) {
+      if (_dragLastTarget !== target) {
+        container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        target.classList.add('drag-over');
+        _dragLastTarget = target;
+      }
+    }
+  });
+
+  container.addEventListener('dragleave', e => {
+    if (!container.contains(e.relatedTarget)) {
+      container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      _dragLastTarget = null;
+    }
+  });
+
+  container.addEventListener('drop', e => {
+    e.preventDefault();
+    container.querySelectorAll('.drag-over, .drag-dragging').forEach(el =>
+      el.classList.remove('drag-over', 'drag-dragging'));
+    if (!_dragSrc) return;
+    // Try direct hit, fall back to last tracked target, fall back to nearest
+    let target = e.target.closest('[draggable="true"]');
+    if (!target || target.parentNode !== container) target = _dragLastTarget;
+    if (!target || target.parentNode !== container) target = _nearestDraggable(container, e.clientY);
+    if (!target || target === _dragSrc) { _dragSrc = null; _dragLastTarget = null; return; }
+    const rect = target.getBoundingClientRect();
+    if (e.clientY > rect.top + rect.height / 2) container.insertBefore(_dragSrc, target.nextSibling);
+    else container.insertBefore(_dragSrc, target);
+    _dragSrc = null;
+    _dragLastTarget = null;
+  });
+}
+
+// ============================================================
+// DRAG — WEEK COL  (zone-based: where you drop = what it becomes)
+// ============================================================
+function makeDraggableWeekCol(container) {
+  if (!container || container._dragReady) return;
+  container._dragReady = true;
+
+  // Decorate draggable children
+  [...container.children].forEach(item => {
+    if ([...item.classList].some(c => _skipClasses.has(c))) return;
+    item.setAttribute('draggable', 'true');
+    if (!item.querySelector('.drag-handle')) {
+      const h = document.createElement('span');
+      h.className = 'drag-handle'; h.setAttribute('aria-hidden','true'); h.textContent = '⠿';
+      item.appendChild(h);
+    }
+  });
+
+  const isStudyEl = el => el && el.dataset.study === '1';
+
+  // True if cursor Y is in the study zone (below divider, or below all events if no divider)
+  function inStudyZone(clientY) {
+    const divider = container.querySelector('.day-divider');
+    if (divider) return clientY > divider.getBoundingClientRect().bottom;
+    const eventItems = [...container.children].filter(
+      el => el.getAttribute('draggable') === 'true' && el.dataset.study !== '1');
+    if (!eventItems.length) return true;
+    return clientY > eventItems[eventItems.length - 1].getBoundingClientRect().bottom - 4;
+  }
+
+  // Nearest draggable in a given section (excluding _dragSrc)
+  function nearestInSection(clientY, wantStudy) {
+    const items = [...container.children].filter(el =>
+      el.getAttribute('draggable') === 'true' &&
+      el !== _dragSrc &&
+      (wantStudy ? el.dataset.study === '1' : el.dataset.study !== '1'));
+    if (!items.length) return null;
+    let nearest = null, nearestDist = Infinity;
+    for (const el of items) {
+      const box = el.getBoundingClientRect();
+      const dist = Math.abs(clientY - (box.top + box.height / 2));
+      if (dist < nearestDist) { nearestDist = dist; nearest = el; }
+    }
+    return nearest;
+  }
+
+  // Make an item a study item, save original color
+  function ensureStudy(item) {
+    if (item.dataset.study === '1') return;
+    item.dataset.origColor = item.style.borderLeftColor;
+    item.dataset.study = '1';
+    item.classList.add('day-study-item');
+    item.style.borderLeftColor = 'var(--accent)';
+  }
+
+  // Make an item an event item, restore original color
+  function ensureEvent(item) {
+    if (item.dataset.study !== '1') return;
+    item.dataset.study = '0';
+    item.classList.remove('day-study-item');
+    item.style.borderLeftColor = item.dataset.origColor || '';
+  }
+
+  // Keep divider + label in sync with actual study items
+  function syncDivider() {
+    const studyItems = [...container.children].filter(
+      el => el.getAttribute('draggable') === 'true' && el.dataset.study === '1');
+    const existing = container.querySelector('.day-divider');
+    const existingLbl = container.querySelector('.day-section-label');
+
+    if (studyItems.length > 0) {
+      const firstStudy = studyItems[0];
+      if (!existing) {
+        const div = document.createElement('div'); div.className = 'day-divider';
+        const lbl = document.createElement('div'); lbl.className = 'day-section-label'; lbl.textContent = 'Study';
+        container.insertBefore(div, firstStudy);
+        container.insertBefore(lbl, firstStudy);
+      } else {
+        // Move divider + label just before the first study item if needed
+        if (existing.nextElementSibling !== existingLbl) container.insertBefore(existingLbl, existing.nextSibling);
+        if (existingLbl.nextElementSibling !== firstStudy) container.insertBefore(existingLbl, firstStudy);
+        if (existing.nextElementSibling !== existingLbl) container.insertBefore(existing, existingLbl);
+      }
+    } else {
+      existing?.remove();
+      existingLbl?.remove();
+      container.classList.remove('drag-bottom');
+    }
+  }
+
+  container.addEventListener('dragstart', e => {
+    const item = e.target.closest('[draggable="true"]');
+    if (!item || item.parentNode !== container) return;
+    _dragSrc = item; _dragLastTarget = null;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+    setTimeout(() => { if (_dragSrc) _dragSrc.classList.add('drag-dragging'); }, 0);
+  });
+
+  container.addEventListener('dragend', () => {
+    container.querySelectorAll('.drag-over,.drag-dragging').forEach(el =>
+      el.classList.remove('drag-over', 'drag-dragging'));
+    container.classList.remove('drag-bottom');
+    _dragSrc = null; _dragLastTarget = null;
+  });
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!_dragSrc) return;
+    const studyZone = inStudyZone(e.clientY);
+
+    container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    container.classList.remove('drag-bottom');
+
+    // Count study items excluding the dragged item itself
+    const studyCount = [...container.children].filter(
+      el => el.getAttribute('draggable') === 'true' && el.dataset.study === '1' && el !== _dragSrc).length;
+
+    if (studyZone && studyCount === 0) {
+      // Empty (or will-be-empty) study zone — show bottom indicator
+      container.classList.add('drag-bottom');
+      _dragLastTarget = '__bottom__';
+      return;
+    }
+
+    // Find nearest item in the hovered zone
+    let target = studyZone
+      ? (e.target.closest('[data-study="1"]') || nearestInSection(e.clientY, true))
+      : (e.target.closest('[data-study="0"]') || nearestInSection(e.clientY, false));
+
+    if (target && target.parentNode !== container) target = null;
+    if (target === _dragSrc) target = null;
+
+    if (target) {
+      target.classList.add('drag-over');
+      _dragLastTarget = target;
+    }
+  });
+
+  container.addEventListener('dragleave', e => {
+    if (!container.contains(e.relatedTarget)) {
+      container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      container.classList.remove('drag-bottom');
+      _dragLastTarget = null;
+    }
+  });
+
+  container.addEventListener('drop', e => {
+    e.preventDefault();
+    container.querySelectorAll('.drag-over,.drag-dragging').forEach(el =>
+      el.classList.remove('drag-over', 'drag-dragging'));
+    container.classList.remove('drag-bottom');
+    if (!_dragSrc) return;
+
+    const studyZone = inStudyZone(e.clientY);
+    const studyCount = [...container.children].filter(
+      el => el.getAttribute('draggable') === 'true' && el.dataset.study === '1' && el !== _dragSrc).length;
+
+    if (_dragLastTarget === '__bottom__' || (studyZone && studyCount === 0)) {
+      // Drop into empty study zone — append and type-convert
+      container.appendChild(_dragSrc);
+      ensureStudy(_dragSrc);
+    } else {
+      let target = (_dragLastTarget instanceof Element && _dragLastTarget.parentNode === container)
+        ? _dragLastTarget
+        : (studyZone ? nearestInSection(e.clientY, true) : nearestInSection(e.clientY, false));
+
+      if (target && target !== _dragSrc && target.parentNode === container) {
+        const rect = target.getBoundingClientRect();
+        if (e.clientY > rect.top + rect.height / 2) container.insertBefore(_dragSrc, target.nextSibling);
+        else container.insertBefore(_dragSrc, target);
+        // Zone determines type
+        if (studyZone) ensureStudy(_dragSrc); else ensureEvent(_dragSrc);
+      }
+    }
+
+    syncDivider();
+    _dragSrc = null; _dragLastTarget = null;
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderToday();
+renderWeek();
+renderPlan();
+renderGrades();
+
+setInterval(renderTodayCols, 60000);
+setTimeout(()=>{
+  const col=document.querySelector('.day-col.today');
+  if (col) col.scrollIntoView({inline:'center',behavior:'smooth'});
+},200);
+
+// ─── macOS Native Notification Bridge ────────────────────────────────────────
+// When running inside the Study Planner menu bar app, this sends native
+// macOS banner notifications via the Swift WKWebView message handler.
+// Outside the app (e.g. in Chrome) it silently falls back to the browser
+// Notification API or does nothing.
+
+function nativeNotify(title, body) {
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.studyNotify) {
+    // Running inside the macOS app — use native notifications
+    window.webkit.messageHandlers.studyNotify.postMessage({ title: title, body: body });
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    // Fallback: browser notification (when opened in Chrome/Safari directly)
+    new Notification(title, { body: body, icon: '' });
+  }
+}
+
+// Check for upcoming items every 5 minutes and notify if something is starting soon
+function checkUpcomingNotifications() {
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  if (!DATA || !DATA.today || !DATA.today.agenda) return;
+
+  DATA.today.agenda.forEach(function(item) {
+    if (!item.start) return;
+    const m = item.start.match(/(\d+):(\d+)(am|pm)/i);
+    if (!m) return;
+    let h = parseInt(m[1]), mn = parseInt(m[2]);
+    const mer = m[3].toLowerCase();
+    if (mer === 'pm' && h !== 12) h += 12;
+    if (mer === 'am' && h === 12) h = 0;
+    const itemMins = h * 60 + mn;
+    const diff = itemMins - nowMins;
+
+    // Notify at 10 min and 2 min warnings (only once each via sessionStorage flag)
+    [10, 2].forEach(function(threshold) {
+      if (diff === threshold) {
+        const key = 'notified_' + item.title + '_' + threshold;
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, '1');
+          const label = diff === 2 ? 'Starting in 2 minutes' : 'Starting in 10 minutes';
+          const subject = item.subject ? ' · ' + item.subject : '';
+          nativeNotify(item.title + subject, label);
+        }
+      }
+    });
+  });
+}
+
+setInterval(checkUpcomingNotifications, 60000);
+// Also request browser notification permission on first load (fallback path)
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+</script>
+</body>
+</html>
