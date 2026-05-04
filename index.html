@@ -1,15 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schoology Study Planner</title>
-    <script>
-        // Redirect to study.html
-        window.location.replace('/study.html');
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Connect your Schoology account to see your assignments and grades.">
+  <title>Schoology Study Planner</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #191919;
+      --card: #242424;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e8e8;
+      --subtext: rgba(232,232,232,0.42);
+      --accent: #818CF8;
+      --error: #F87171;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .landing-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .landing-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .landing-headline {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .landing-subtext {
+      font-size: 14px;
+      color: var(--subtext);
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--subtext);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .school-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--text);
+      transition: border-color 0.2s, background-color 0.2s;
+      font-family: inherit;
+    }
+
+    .school-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(129,140,248,0.08);
+    }
+
+    .input-hint {
+      font-size: 12px;
+      color: var(--subtext);
+      margin-top: 6px;
+    }
+
+    .connect-button {
+      width: 100%;
+      padding: 13px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .connect-button:hover {
+      background: #6f78e8;
+    }
+
+    .connect-button:active {
+      transform: scale(0.98);
+    }
+
+    .connect-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: scale(1);
+    }
+
+    .error-container {
+      display: none;
+      margin-bottom: 20px;
+      padding: 11px 13px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-left: 3px solid var(--error);
+      border-radius: 10px;
+      color: #FCA5A5;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .error-container.show {
+      display: block;
+    }
+
+    .error-dismiss {
+      float: right;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+      margin-right: 6px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 480px) {
+      .landing-headline {
+        font-size: 24px;
+      }
+
+      .landing-subtext {
+        font-size: 13px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <p>Redirecting to app...</p>
+  <div class="landing-container">
+    <div class="landing-header">
+      <h1 class="landing-headline">Better view of your Schoology assignments</h1>
+      <p class="landing-subtext">Sign in with your school's Schoology account to see your assignments and grades.</p>
+    </div>
+
+    <div id="error-banner" class="error-container">
+      <span class="error-dismiss" onclick="document.getElementById('error-banner').classList.remove('show');">✕</span>
+      <span id="error-message"></span>
+    </div>
+
+    <form id="connect-form" onsubmit="handleFormSubmit(event)">
+      <div class="form-group">
+        <label class="form-label" for="school-input">School Name</label>
+        <input
+          id="school-input"
+          class="school-input"
+          type="text"
+          placeholder="e.g., myschool"
+          autocomplete="off"
+          aria-label="School name"
+        >
+        <p class="input-hint">Don't include .schoology.com</p>
+      </div>
+
+      <button id="connect-btn" class="connect-button" type="submit">
+        <span id="btn-text">Connect Schoology</span>
+      </button>
+    </form>
+  </div>
+
+  <script>
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const input = document.getElementById('school-input');
+      const school = input.value.trim();
+      const errorBanner = document.getElementById('error-banner');
+      const errorMessage = document.getElementById('error-message');
+      const connectBtn = document.getElementById('connect-btn');
+      const btnText = document.getElementById('btn-text');
+
+      // Clear previous error
+      errorBanner.classList.remove('show');
+      errorMessage.textContent = '';
+
+      // Client-side validation
+      if (!school) {
+        errorMessage.textContent = 'Please enter your school name.';
+        errorBanner.classList.add('show');
+        return;
+      }
+
+      if (/\s/.test(school)) {
+        errorMessage.textContent = 'School name cannot contain spaces. Try "myschool" instead of "my school".';
+        errorBanner.classList.add('show');
+        return;
+      }
+
+      // Store in sessionStorage for recovery if needed
+      sessionStorage.setItem('pendingSchool', school);
+
+      // Disable button and show loading state
+      connectBtn.disabled = true;
+      btnText.innerHTML = '<span class="loading-spinner"></span>Connecting...';
+
+      try {
+        // POST to /api/auth with school name
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ school }),
+        });
+
+        if (response.ok) {
+          // Redirect to Schoology OAuth (response should have Location header)
+          window.location.href = response.url || '/';
+        } else {
+          const errorText = await response.text();
+          let friendlyError = 'Failed to connect to Schoology. Please try again.';
+
+          if (response.status === 400) {
+            friendlyError = 'Invalid school name format. Please try again.';
+          } else if (response.status === 404) {
+            friendlyError = 'School not found. Check the spelling and try again.';
+          }
+
+          errorMessage.textContent = friendlyError;
+          errorBanner.classList.add('show');
+          connectBtn.disabled = false;
+          btnText.textContent = 'Connect Schoology';
+        }
+      } catch (error) {
+        console.error('Auth error:', error);
+        errorMessage.textContent = 'Failed to connect. Check your internet connection and try again.';
+        errorBanner.classList.add('show');
+        connectBtn.disabled = false;
+        btnText.textContent = 'Connect Schoology';
+      }
+    }
+
+    // Pre-fill school name if recovering from error
+    window.addEventListener('DOMContentLoaded', () => {
+      const pending = sessionStorage.getItem('pendingSchool');
+      if (pending) {
+        document.getElementById('school-input').value = pending;
+        document.getElementById('school-input').focus();
+      }
+    });
+  </script>
 </body>
 </html>
