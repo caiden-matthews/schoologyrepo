@@ -936,15 +936,57 @@ async function syncData() {
 }
 
 /**
+ * Validate tokens by attempting a lightweight API call
+ */
+async function validateTokens() {
+  const accessToken = localStorage.getItem('sc_at');
+  const accessSecret = localStorage.getItem('sc_ats');
+  const school = localStorage.getItem('sc_school');
+
+  if (!accessToken || !accessSecret) {
+    return false; // No tokens to validate
+  }
+
+  try {
+    // Attempt a lightweight sync to validate tokens
+    const response = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_token: accessToken,
+        access_token_secret: accessSecret,
+        school: school || 'schoology.com',
+      }),
+    });
+
+    const result = await response.json();
+
+    // If sync returns needs_auth error, tokens are invalid
+    if (result.needs_auth || (result.ok === false && response.status === 401)) {
+      return false; // Tokens invalid
+    }
+
+    // If we got any response (ok or error), tokens are syntactically valid
+    // Actual data errors are handled by syncData() later
+    return true;
+  } catch (error) {
+    // Network error during validation - be optimistic, tokens might be OK
+    // syncData() will handle actual failures
+    console.warn('Token validation error:', error);
+    return true;
+  }
+}
+
+/**
  * Initialize authentication on page load
  */
-function initAuth() {
+async function initAuth() {
   // First, handle OAuth callback (if tokens are in hash)
   handleOAuthCallback();
 
   // Then check if user is authenticated
   if (isAuthenticated()) {
-    // User is logged in — show app
+    // Show app optimistically (tokens are in localStorage)
     showApp();
 
     // Update greeting with user's name if available
@@ -956,6 +998,14 @@ function initAuth() {
 
     // Add logout button if not already present
     addLogoutButton();
+
+    // Validate tokens in background
+    const tokensValid = await validateTokens();
+    if (!tokensValid) {
+      // Tokens are expired/invalid - clear and show landing page
+      logout();
+      showErrorBanner('Your session has expired. Please log in again.', false);
+    }
   } else {
     // User is not logged in — redirect to landing page
     showLandingPage();
