@@ -1,6 +1,6 @@
-# Schoology Study Planner — Public SaaS
+# Schoology Study Planner
 
-A free, ad-supported web app that lets any student at any Schoology-powered school connect their account via OAuth and get a better, more feature-rich academic dashboard.
+A web app that lets any student at any Schoology-powered school connect their account via OAuth and get a better, more feature-rich academic dashboard.
 
 ## Features
 
@@ -18,7 +18,6 @@ A free, ad-supported web app that lets any student at any Schoology-powered scho
 - **Frontend:** Vanilla JavaScript SPA (no framework, no bundler)
 - **Hosting:** Netlify static + serverless Functions
 - **Authentication:** Schoology OAuth 1.0a
-- **Monetization:** Google AdSense
 - **Data Storage:** Session-only (localStorage, no server-side database)
 
 ## Getting Started
@@ -103,7 +102,6 @@ See `.planning/ROADMAP.md` and `.planning/codebase/ARCHITECTURE.md` for detailed
 - All 5 tabs fully functional
 - Sync throttling (prevents rate limit abuse)
 - Security headers (CSP, HSTS)
-- Google AdSense integration
 
 **v2 (future):**
 - Push notifications for upcoming deadlines
@@ -138,16 +136,6 @@ To continue development, run `/gsd-plan-phase 1` to create the detailed Phase 1 
 - Functions deployed from `netlify/functions/`
 - Environment variables managed in dashboard
 
-**Custom Domain:**
-Once you have revenue and want a custom domain (e.g., `studyplanner.com`), update DNS and configure in Netlify.
-
-## Monetization
-
-- **Google AdSense:** Passive revenue via ad placements
-- **COPPA Compliance:** Configured for underage audience (required by law)
-- **Expected CPM:** $1–5 per 1000 impressions (student audience)
-- **Target:** $200–1000/month at scale (starting small)
-
 ## License
 
 This project is proprietary. All rights reserved.
@@ -158,5 +146,5 @@ Questions or issues? Open an issue on GitHub or email support (coming soon).
 
 ---
 
-**Last updated:** 2026-05-03  
-**Status:** In development (Phase 1 coming soon)
+**Last updated:** 2026-05-04  
+**Status:** Phase 1 complete — OAuth foundation ready
