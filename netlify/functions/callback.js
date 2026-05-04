@@ -56,15 +56,19 @@ exports.handler = async (event) => {
   const verifier = qs.get('oauth_verifier') || (event.queryStringParameters || {}).oauth_verifier;
   const reqToken = qs.get('oauth_token')    || (event.queryStringParameters || {}).oauth_token;
 
-  // Retrieve request token secret from the cookie set in auth.js
+  // Retrieve request token secret and school domain from cookies set in auth.js
   const cookies    = parseCookies(event.headers.cookie || event.headers.Cookie || '');
   const reqSecret  = decodeURIComponent(cookies.sc_rts || '');
+  const school     = decodeURIComponent(cookies.sc_domain || '');
 
   if (!verifier || !reqToken) {
     return htmlRedirect(SITE, 'oauth_error', 'Missing verifier or token from Schoology');
   }
   if (!reqSecret) {
     return htmlRedirect(SITE, 'oauth_error', 'Session expired — please try connecting again');
+  }
+  if (!school) {
+    return htmlRedirect(SITE, 'oauth_error', 'Please try connecting again');
   }
 
   try {
@@ -96,23 +100,27 @@ exports.handler = async (event) => {
       userName = `${user.name_first || ''} ${user.name_last || ''}`.trim();
     } catch (_) {}
 
-    // Clear the request token secret cookie
-    const clearCookie = 'sc_rts=; Path=/; HttpOnly; Max-Age=0';
+    // Clear the request token secret and domain cookies
+    const clearCookies = [
+      'sc_rts=; Path=/; HttpOnly; Max-Age=0',
+      'sc_domain=; Path=/; HttpOnly; Max-Age=0',
+    ];
 
     // Redirect back to the app with tokens in the URL hash.
     // Hash fragments never go to the server — the browser reads them and
     // stores them in localStorage, then cleans the URL.
     const hash = new URLSearchParams({
-      sc_at:   accessToken,
-      sc_ats:  accessSecret,
-      sc_user: userName,
+      sc_at:     accessToken,
+      sc_ats:    accessSecret,
+      sc_user:   userName,
+      sc_school: school,
     }).toString();
 
     return {
       statusCode: 302,
       headers: {
         Location:    `${SITE}/#${hash}`,
-        'Set-Cookie': clearCookie,
+        'Set-Cookie': clearCookies,
       },
     };
 
