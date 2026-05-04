@@ -58,12 +58,45 @@ exports.handler = async (event) => {
     };
   }
 
+  // Parse school name from POST body
+  let school = '';
+  try {
+    if (event.body) {
+      const body = JSON.parse(event.body);
+      school = (body.school || '').trim();
+    }
+  } catch (e) {
+    // Ignore JSON parse errors, school stays empty
+  }
+
+  // Validate school name
+  if (!school) {
+    return {
+      statusCode: 400,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'School name required' }),
+    };
+  }
+
+  // Check for invalid characters (allow alphanumeric, hyphens, underscores)
+  if (!/^[a-zA-Z0-9_-]+$/.test(school)) {
+    return {
+      statusCode: 400,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Invalid school name format. Use only letters, numbers, hyphens, and underscores.' }),
+    };
+  }
+
   const callbackUrl = `${SITE}/api/callback`;
+  const schoolDomain = school;  // Store for later use (school name, without .schoology.com)
 
   try {
     const header = oauthHeader(
       'POST', REQUEST_TOKEN_URL,
-      { oauth_callback: callbackUrl },
+      {
+        oauth_callback: callbackUrl,
+        state: encodeURIComponent(schoolDomain),  // Pass school in state parameter
+      },
       KEY, SECRET
     );
 
@@ -83,22 +116,35 @@ exports.handler = async (event) => {
 
     if (!reqToken) throw new Error('No oauth_token in Schoology response');
 
-    // Store the request token secret in a short-lived HttpOnly cookie so the
-    // callback function can retrieve it without any server-side storage.
-    const cookie = [
-      `sc_rts=${encodeURIComponent(reqSecret)}`,
-      'Path=/',
-      'HttpOnly',
-      'SameSite=Lax',
-      'Max-Age=600',          // 10 minutes — plenty for the auth flow
-      ...(SITE.startsWith('https') ? ['Secure'] : []),
-    ].join('; ');
+    // Store the request token secret AND school domain in HttpOnly cookies so the
+    // callback function can retrieve them without any server-side storage.
+    const cookies = [
+      [
+        `sc_rts=${encodeURIComponent(reqSecret)}`,
+        'Path=/',
+        'HttpOnly',
+        'SameSite=Lax',
+        'Max-Age=600',          // 10 minutes — plenty for the auth flow
+        ...(SITE.startsWith('https') ? ['Secure'] : []),
+      ].join('; '),
+      [
+        `sc_domain=${encodeURIComponent(schoolDomain)}`,
+        'Path=/',
+        'HttpOnly',
+        'SameSite=Lax',
+        'Max-Age=600',
+        ...(SITE.startsWith('https') ? ['Secure'] : []),
+      ].join('; '),
+    ];
 
     const authorizeUrl = `${AUTHORIZE_URL}?oauth_token=${encodeURIComponent(reqToken)}`;
 
     return {
       statusCode: 302,
-      headers: { Location: authorizeUrl, 'Set-Cookie': cookie },
+      headers: {
+        Location: authorizeUrl,
+        'Set-Cookie': cookies,
+      },
     };
 
   } catch (err) {
