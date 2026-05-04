@@ -466,7 +466,7 @@
     <div class="tab active" id="tab-today">
       <div class="page-header">
         <div>
-          <div class="page-title" id="greeting">Hey Caiden</div>
+          <div class="page-title" id="greeting">Hey there</div>
           <div class="page-sub"  id="todayDate"></div>
         </div>
         <button class="sync-btn" id="syncBtn">
@@ -653,740 +653,343 @@
 // DATA  (updated by sync task — do not edit manually)
 // ===DATA_BEGIN===
 const DATA = {
-  "meta": {
-    "lastUpdated": "2026-04-14 15:15 auto-sync (scheduled)",
-    "calendarConnected": true,
-    "browserConnected": false,
-    "note": "Calendar connected. Chrome extension offline -- deep links sourced from CSV URLs (all are valid /assignment/XXXX format)."
-  },
-  "profile": {
-    "name": "Caiden",
-    "bedtime": "22:30",
-    "schoolStart": "8:35",
-    "schoolEnd": "15:15",
-    "homeNoSports": "15:30",
-    "homeSports": "19:00"
-  },
-  "notifications": [
-    {
-      "id": "n1",
-      "time": "2026-04-14 auto-sync",
-      "read": false,
-      "message": "Tue 4/14: SS MINOR Quiz 12pm today. Film Treatment was due 8am + Kin(g)dom HW due 8:25am (confirm submitted). Lax practice 8:15-9:15pm. Tonight 9:30-10:30pm is your Gatsby revision window -- hockey tryouts start Fri so essay MUST be done by Thu night."
-    },
-    {
-      "id": "n2",
-      "time": "2026-04-13 auto-sync",
-      "read": true,
-      "message": "Mon 4/13: TODAY IS THE GAUNTLET. Mandarin Gimkit 11am, USL Gatsby Zine 11:10am, Mandarin WSQ1 quiz 11:59am, USL MAJOR Gatsby in-class essay 12:10pm, A2 Ch8A Quiz + HW 8.3 2:15pm."
-    }
-  ],
-  "subjects": {
-    "A2": {
-      "full": "Algebra 2",
-      "color": "#3B82F6"
-    },
-    "Chem H": {
-      "full": "Chemistry Honors",
-      "color": "#8B5CF6"
-    },
-    "Civics": {
-      "full": "Civics",
-      "color": "#10B981"
-    },
-    "Film": {
-      "full": "Filmmaking",
-      "color": "#F59E0B"
-    },
-    "Mandarin": {
-      "full": "Mandarin 2/2H",
-      "color": "#EF4444"
-    },
-    "SS": {
-      "full": "Sacred Scriptures",
-      "color": "#6366F1"
-    },
-    "USL H": {
-      "full": "US Lit Honors",
-      "color": "#EC4899"
-    },
-    "USL": {
-      "full": "US Literature",
-      "color": "#F97316"
-    }
-  },
-  "alerts": [
-    {
-      "id": "a1",
-      "type": "red",
-      "text": "<b>Hockey Tryouts Fri-Sun 4/17-4/19 (3 days away)</b> + USL MAJOR Gatsby Final due Mon 4/20 11:10am. Essay MUST be done by Thu 4/16 night. You have Tue night + Wed night + Thu night = 3 sessions to finish. Don't waste them."
-    },
-    {
-      "id": "a2",
-      "type": "red",
-      "text": "<b>USL H MAJOR Position Paper #2 \u2014 still overdue (due 4/10, now 4 days late)</b>. If not submitted, do it TONIGHT. Every day it sits, the late penalty grows. MAJOR grade at stake."
-    },
-    {
-      "id": "a3",
-      "type": "amber",
-      "text": "<b>SS MINOR Quiz today 12pm</b> \u2014 Gospel Intro, Infancy, World of Jesus. You prepped last night. Film Treatment (was 8am) + Kin(g)dom HW (was 8:25am) \u2014 confirm submitted, or late-submit if accepted."
-    },
-    {
-      "id": "a4",
-      "type": "amber",
-      "text": "<b>Film Project 8 Final Film due Tue 4/21 8am</b>. After tryouts weekend you'll have Mon 4/20 evening only. Start planning scenes this week."
-    }
-  ],
-  "today": {
-    "date": "2026-04-14",
-    "hasSports": true,
-    "focusTask": {
-      "title": "Gatsby Final Draft revision (after lax practice)",
-      "subject": "USL",
-      "note": "Lax practice 8:15-9:15pm. Home ~9:30pm. Tonight: (1) Confirm Film Treatment + Kin(g)dom HW submitted (5 min), (2) Gatsby revision 9:30-10:30pm -- expand in-class draft with textual evidence. Hockey tryouts start Fri -- essay must be DONE by Thu night.",
-      "duration": 70
-    },
-    "agenda": [
-      {
-        "start": "8:00am",
-        "subject": "Film",
-        "type": "hw",
-        "duration": "\u2014",
-        "title": "Final Film Treatment/Script DUE 8:00am",
-        "note": "Confirm submitted this morning. If not, late submit ASAP.",
-        "tags": [
-          {
-            "label": "DUE",
-            "cls": "badge-amber"
-          }
-        ],
-        "schoologyUrl": "https://schoology.shschools.org/assignment/8343507180"
-      },
-      {
-        "start": "8:25am",
-        "subject": "SS",
-        "type": "hw",
-        "duration": "\u2014",
-        "title": "HW: Kin(g)dom note sheet DUE 8:25am",
-        "note": "Confirm submitted in class this morning.",
-        "tags": [
-          {
-            "label": "DUE",
-            "cls": "badge-amber"
-          }
-        ],
-        "schoologyUrl": "https://schoology.shschools.org/assignment/8343750050"
-      },
-      {
-        "start": "12:00pm",
-        "subject": "SS",
-        "type": "event",
-        "duration": "10 min",
-        "title": "MINOR Quiz: Gospel Intro, Infancy, World of Jesus",
-        "note": "You reviewed last night. Execute.",
-        "tags": [
-          {
-            "label": "Quiz",
-            "cls": "badge-amber"
-          }
-        ],
-        "schoologyUrl": "https://schoology.shschools.org/assignment/8326364446"
-      },
-      {
-        "start": "8:15pm",
-        "subject": "A2",
-        "type": "block",
-        "duration": "60 min",
-        "title": "Spring 16aaa lacrosse practice 8:15-9:15pm",
-        "note": "Home ~9:30pm after practice.",
-        "tags": [
-          {
-            "label": "Sports",
-            "cls": "badge-amber"
-          }
-        ],
-        "schoologyUrl": "https://schoology.shschools.org/"
-      },
-      {
-        "start": "9:30pm",
-        "subject": "USL",
-        "type": "study",
-        "duration": "60 min",
-        "title": "Gatsby essay: expand in-class draft + evidence",
-        "note": "Take in-class draft and strengthen textual evidence. MAJOR due Mon 4/20. Tryouts start Fri -- 3 sessions to finish.",
-        "tags": [
-          {
-            "label": "MAJOR prep",
-            "cls": "badge-red"
-          }
-        ],
-        "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
-      },
-      {
-        "start": "10:30pm",
-        "subject": "USL H",
-        "type": "study",
-        "duration": "10 min",
-        "title": "CHECK: Position Paper #2 submitted? Submit if not.",
-        "note": "Due 4/10, now 4 days late. If not submitted yet, write/submit TONIGHT. Do NOT let this slide another day.",
-        "tags": [
-          {
-            "label": "OVERDUE MAJOR",
-            "cls": "badge-red"
-          }
-        ],
-        "schoologyUrl": "https://schoology.shschools.org/assignment/8188061642"
-      }
-    ]
-  },
-  "week": [
-    {
-      "date": "2026-04-14",
-      "day": "Tue",
-      "label": "Today",
-      "hasSports": true,
-      "note": "Film Treatment due 8am + Kin(g)dom HW 8:25am (confirm submitted). SS MINOR Quiz 12pm. Lax 8:15-9:15pm. Tonight: Gatsby revision + check USL H Paper #2.",
-      "items": [
-        {
-          "subject": "Film",
-          "label": "Final Film Treatment/Script DUE 8:00am",
-          "time": "8:00am",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8343507180"
-        },
-        {
-          "subject": "SS",
-          "label": "HW Kin(g)dom note sheet DUE 8:25am",
-          "time": "8:25am",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8343750050"
-        },
-        {
-          "subject": "SS",
-          "label": "MINOR Quiz: Gospel Intro/Infancy/World of Jesus 12:00pm",
-          "time": "12:00pm",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8326364446"
-        },
-        {
-          "subject": "A2",
-          "label": "Spring 16aaa lax practice 8:15-9:15pm",
-          "time": "8:15pm",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        },
-        {
-          "subject": "USL",
-          "label": "Gatsby essay: expand draft + evidence",
-          "time": "9:30pm",
-          "study": true,
-          "major": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
-        },
-        {
-          "subject": "USL H",
-          "label": "CHECK: Position Paper #2 \u2014 submit if missing",
-          "time": "10:30pm",
-          "study": true,
-          "major": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8188061642"
-        }
-      ]
-    },
-    {
-      "date": "2026-04-15",
-      "day": "Wed",
-      "label": "Tomorrow",
-      "hasSports": true,
-      "note": "Lax practice 7:30-8:30pm. Gatsby revision continues \u2014 intro/conclusion + argument tightening. Chem catchup if time.",
-      "items": [
-        {
-          "subject": "A2",
-          "label": "Spring 16aaa lax practice 7:30-8:30pm",
-          "time": "7:30pm",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        },
-        {
-          "subject": "USL",
-          "label": "Gatsby essay: full revision \u2014 intro/conclusion",
-          "time": "9:00pm",
-          "study": true,
-          "major": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
-        },
-        {
-          "subject": "Chem H",
-          "label": "Catchup: Shell Lab + States of Matter + L6.1-6.4 C4U (if time)",
-          "time": "9:45pm",
-          "study": true,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        }
-      ]
-    },
-    {
-      "date": "2026-04-16",
-      "day": "Thu",
-      "label": "Thursday",
-      "hasSports": false,
-      "note": "Coach Justin 6-7am. NO SPORTS after school -- your biggest window this week. GATSBY MUST BE SUBMITTED TONIGHT (tryouts Fri). A2 HW 8.2 due Fri 1:15pm.",
-      "items": [
-        {
-          "subject": "A2",
-          "label": "Coach Justin 6:00-7:00am",
-          "time": "6:00am",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        },
-        {
-          "subject": "USL",
-          "label": "GATSBY FINAL: proofread + format + SUBMIT",
-          "time": "7:00pm",
-          "study": true,
-          "major": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
-        },
-        {
-          "subject": "A2",
-          "label": "HW 8.2 (due Fri 1:15pm)",
-          "time": "9:00pm",
-          "study": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8327739172"
-        }
-      ]
-    },
-    {
-      "date": "2026-04-17",
-      "day": "Fri",
-      "label": "Friday",
-      "hasSports": true,
-      "note": "Tier 1 Hockey Tryouts Day 1 (all day). A2 HW 8.2 due 1:15pm \u2014 submit before tryouts. Gatsby should already be in.",
-      "items": [
-        {
-          "subject": "A2",
-          "label": "Tier 1 Hockey Tryouts (all day)",
-          "time": "all day",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        },
-        {
-          "subject": "A2",
-          "label": "HW 8.2 DUE 1:15pm",
-          "time": "1:15pm",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8327739172"
-        }
-      ]
-    },
-    {
-      "date": "2026-04-18",
-      "day": "Sat",
-      "label": "Saturday",
-      "hasSports": true,
-      "note": "Tier 1 Hockey Tryouts Day 2. No study expected.",
-      "items": [
-        {
-          "subject": "A2",
-          "label": "Tier 1 Hockey Tryouts (all day)",
-          "time": "all day",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        }
-      ]
-    },
-    {
-      "date": "2026-04-19",
-      "day": "Sun",
-      "label": "Sunday",
-      "hasSports": true,
-      "note": "Tier 1 Hockey Tryouts Day 3. Rest if possible. Film Project 8 planning if energy permits (due Tue).",
-      "items": [
-        {
-          "subject": "A2",
-          "label": "Tier 1 Hockey Tryouts (all day)",
-          "time": "all day",
-          "study": false,
-          "schoologyUrl": "https://schoology.shschools.org/"
-        },
-        {
-          "subject": "Film",
-          "label": "Project 8 Final Film: plan scenes (if time)",
-          "time": "evening",
-          "study": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134"
-        }
-      ]
-    },
-    {
-      "date": "2026-04-20",
-      "day": "Mon",
-      "label": "Next Mon",
-      "hasSports": false,
-      "note": "USL MAJOR Gatsby DUE 11:10am (already submitted Thu). Start Position Paper #3 tonight + Film Project 8 shoot/edit.",
-      "items": [
-        {
-          "subject": "USL",
-          "label": "MAJOR Gatsby Final Draft DUE 11:10am",
-          "time": "11:10am",
-          "study": false,
-          "major": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016"
-        },
-        {
-          "subject": "Film",
-          "label": "Project 8 Final Film: shoot + edit",
-          "time": "4:00pm",
-          "study": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134"
-        },
-        {
-          "subject": "USL H",
-          "label": "Position Paper #3: topic + sources",
-          "time": "8:00pm",
-          "study": true,
-          "major": true,
-          "schoologyUrl": "https://schoology.shschools.org/assignment/8192533952"
-        }
-      ]
-    }
-  ],
-  "studyPlan": [
-    {
-      "subject": "USL",
-      "title": "MAJOR: Gatsby Essay -- What's Great About The Great Gatsby?",
-      "due": "2026-04-20",
-      "dueLabel": "Mon 4/20 11:10am -- MUST submit by Thu 4/16 night (tryouts Fri-Sun)",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8339239016",
-      "sessions": [
-        {
-          "day": "Sun 4/12",
-          "task": "Re-read key Gatsby passages + brainstorm thesis",
-          "done": true
-        },
-        {
-          "day": "Mon 4/13",
-          "task": "IN-CLASS draft (75 min ST)",
-          "done": true
-        },
-        {
-          "day": "Tue 4/14",
-          "task": "Expand in-class draft + strengthen textual evidence (after 9:30pm)",
-          "done": false
-        },
-        {
-          "day": "Wed 4/15",
-          "task": "Full revision -- intro/conclusion + tighten argument (after practice)",
-          "done": false
-        },
-        {
-          "day": "Thu 4/16",
-          "task": "FINAL: proofread + format + SUBMIT (tryouts Fri)",
-          "done": false
-        }
-      ]
-    },
-    {
-      "subject": "Film",
-      "title": "MAJOR Project 8: Exquisite Corpse Final Film",
-      "due": "2026-04-21",
-      "dueLabel": "Tue 4/21 8:00am",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134",
-      "sessions": [
-        {
-          "day": "Sun 4/19",
-          "task": "Plan scenes/shotlist (if energy after tryouts)",
-          "done": false
-        },
-        {
-          "day": "Mon 4/20",
-          "task": "Shoot + initial edit",
-          "done": false
-        },
-        {
-          "day": "Mon 4/20 eve",
-          "task": "Final edit + SUBMIT before 8am Tue",
-          "done": false
-        }
-      ]
-    },
-    {
-      "subject": "USL H",
-      "title": "MAJOR Position Paper #3",
-      "due": "2026-04-24",
-      "dueLabel": "Fri 4/24 11:59pm",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8192533952",
-      "sessions": [
-        {
-          "day": "Mon 4/20",
-          "task": "Topic + gather sources (after Gatsby submission)",
-          "done": false
-        },
-        {
-          "day": "Tue 4/21",
-          "task": "Outline + thesis draft",
-          "done": false
-        },
-        {
-          "day": "Wed 4/22",
-          "task": "Body paragraphs with textual evidence",
-          "done": false
-        },
-        {
-          "day": "Thu 4/23",
-          "task": "Intro/conclusion + full revision (Goalie session 4pm)",
-          "done": false
-        },
-        {
-          "day": "Fri 4/24",
-          "task": "Proofread + SUBMIT before 11:59pm",
-          "done": false
-        }
-      ]
-    },
-    {
-      "subject": "Chem H",
-      "title": "MAJOR Unit 6 Test",
-      "due": "2026-05-01",
-      "dueLabel": "Fri 5/1 8:25am",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8297173420",
-      "sessions": [
-        {
-          "day": "Week of 4/20",
-          "task": "Clear Chem catchup: Shell Lab, States of Matter, L6.1-6.4 C4U",
-          "done": false
-        },
-        {
-          "day": "Week of 4/27",
-          "task": "Review Unit 6 notes: Thermal Expansion, Equilibrium, FPD",
-          "done": false
-        },
-        {
-          "day": "Wed 4/29",
-          "task": "Practice problems + stamp sheet",
-          "done": false
-        },
-        {
-          "day": "Thu 4/30",
-          "task": "Final review night before test",
-          "done": false
-        }
-      ]
-    }
-  ],
-  "catchup": [
-    {
-      "subject": "USL H",
-      "title": "MAJOR Position Paper #2",
-      "due": "4/10",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8188061642",
-      "action": "urgent",
-      "note": "4 days overdue. No grade. Submit TONIGHT. Late penalty grows daily."
-    },
-    {
-      "subject": "SS",
-      "title": "MAJOR Assessment Exegesis Unit 1",
-      "due": "2/27",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8183436996",
-      "action": "urgent",
-      "note": "46 days, no grade. Email Fr. Carroll ASAP."
-    },
-    {
-      "subject": "USL",
-      "title": "MAJOR: Gatsby Close Reading Exam",
-      "due": "3/23",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8185112230",
-      "action": "talk",
-      "note": "22 days, no grade. Ask Fries after class."
-    },
-    {
-      "subject": "Film",
-      "title": "Project 7 Socially Concerned Pre-Production",
-      "due": "2/06",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8238234187",
-      "action": "talk",
-      "note": "67 days overdue, no submission/grade. Talk to Quinn."
-    },
-    {
-      "subject": "Film",
-      "title": "Exquisite Corpse: Final Script",
-      "due": "3/25",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8319506657",
-      "action": "talk",
-      "note": "20 days, no grade. Follow up with Quinn."
-    },
-    {
-      "subject": "Chem H",
-      "title": "CW Quiz - Acid/Base and pH Calculations",
-      "due": "2/13",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8251799850",
-      "action": "talk",
-      "note": "60 days ungraded. Mention to Grieb."
-    },
-    {
-      "subject": "Chem H",
-      "title": "Shell Lab Write up",
-      "due": "3/12",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8289285212",
-      "action": "soft",
-      "note": "33 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "Chem H",
-      "title": "CW Quiz - Thermal Expansion/Equilibrium/FPD",
-      "due": "4/09",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8339176424",
-      "action": "soft",
-      "note": "5 days. Likely just ungraded. Monitor."
-    },
-    {
-      "subject": "Chem H",
-      "title": "States of Matter",
-      "due": "3/23",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8320027546",
-      "action": "soft",
-      "note": "22 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "Chem H",
-      "title": "L6.1-6.4 C4U",
-      "due": "3/30",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8297173563",
-      "action": "soft",
-      "note": "15 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "A2",
-      "title": "HW 8.1",
-      "due": "4/08",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8327739161",
-      "action": "soft",
-      "note": "6 days, no grade. Confirm submitted."
-    },
-    {
-      "subject": "A2",
-      "title": "HW 7.1",
-      "due": "3/13",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8287302823",
-      "action": "soft",
-      "note": "Graded F. Ask Demlinger about resubmission."
-    },
-    {
-      "subject": "Mandarin",
-      "title": "HW 4/7 WSQ1 Matching + Listen/Speak",
-      "due": "4/09",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8337729462",
-      "action": "soft",
-      "note": "5 days, no grade. Confirm with Huang."
-    },
-    {
-      "subject": "Mandarin",
-      "title": "MINOR Unit 7 Test",
-      "due": "3/19",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8283676780",
-      "action": "talk",
-      "note": "26 days, no grade. Ask Huang."
-    },
-    {
-      "subject": "Civics",
-      "title": "HONORS SAQ 2",
-      "due": "TBD",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8319550831",
-      "action": "talk",
-      "note": "No due date. Ask Wade-Stueckle."
-    },
-    {
-      "subject": "SS",
-      "title": "HW: World of Jesus Jigsaw",
-      "due": "4/08",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8326552392",
-      "action": "soft",
-      "note": "6 days, no grade. Confirm submitted."
-    },
-    {
-      "subject": "SS",
-      "title": "HW: Stories of David",
-      "due": "3/13",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8289710730",
-      "action": "soft",
-      "note": "32 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "SS",
-      "title": "HW/CW: Messiah One-Pager and Key",
-      "due": "3/17",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8291362165",
-      "action": "soft",
-      "note": "28 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "SS",
-      "title": "CW/HW: Jesus the Refugee",
-      "due": "3/24",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8322146134",
-      "action": "soft",
-      "note": "21 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "Civics",
-      "title": "Step 2. Political Parties and Civil Society",
-      "due": "3/25",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8315884919",
-      "action": "soft",
-      "note": "20 days overdue. Submit if still accepted."
-    },
-    {
-      "subject": "Film",
-      "title": "Project 8: Exquisite Corpse Final Film",
-      "due": "4/21",
-      "schoologyUrl": "https://schoology.shschools.org/assignment/8339520134",
-      "action": "soft",
-      "note": "Due 4/21 -- 7 days. Start after tryouts."
-    }
-  ],
-  "grades": {
-    "A2": {
-      "pct": 91.19,
-      "letter": "A-",
-      "flag": null
-    },
-    "Chem H": {
-      "pct": 82.14,
-      "letter": "B-",
-      "flag": "Low -- missing assignments dragging grade. 4+ overdue items."
-    },
-    "Civics": {
-      "pct": null,
-      "letter": "A",
-      "flag": null
-    },
-    "Film": {
-      "pct": 4.77,
-      "letter": "?",
-      "flag": "Grade looks incorrect -- check with Quinn"
-    },
-    "Mandarin": {
-      "pct": null,
-      "letter": "B",
-      "flag": "Could improve -- check missing submissions"
-    },
-    "SS": {
-      "pct": null,
-      "letter": "A",
-      "flag": "Multiple overdue HW items -- risk of grade drop"
-    },
-    "USL H": {
-      "pct": 94.0,
-      "letter": "A",
-      "flag": "MAJOR Paper #2 still overdue -- tank risk"
-    },
-    "USL": {
-      "pct": null,
-      "letter": "B+",
-      "flag": null
-    }
-  }
+  meta: { lastUpdated: null, calendarConnected: false, browserConnected: false, note: "" },
+  profile: { name: "", bedtime: "22:30", schoolStart: "8:00", schoolEnd: "15:00", homeNoSports: "15:30", homeSports: "19:00" },
+  notifications: [],
+  subjects: {},
+  alerts: [],
+  today: { date: new Date().toISOString().split('T')[0], hasSports: false, focusTask: null, agenda: [] },
+  week: [],
+  studyPlan: [],
+  catchup: [],
+  grades: []
 };
 // ===DATA_END===
+
+// ============================================================
+// OAUTH & AUTHENTICATION
+// ============================================================
+
+/**
+ * Check if user is authenticated by looking for tokens in localStorage
+ */
+function isAuthenticated() {
+  const token = localStorage.getItem('sc_at');
+  return !!token;
+}
+
+/**
+ * Handle OAuth callback: extract tokens from hash and store in localStorage
+ */
+function handleOAuthCallback() {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+
+  // Check for tokens in hash
+  if (hash.has('sc_at')) {
+    const accessToken = hash.get('sc_at');
+    const accessSecret = hash.get('sc_ats');
+    const school = hash.get('sc_school');
+    const userName = hash.get('sc_user');
+
+    // Store tokens in localStorage (persistent across page refresh)
+    localStorage.setItem('sc_at', accessToken);
+    localStorage.setItem('sc_ats', accessSecret);
+    if (school) localStorage.setItem('sc_school', school);
+    if (userName) localStorage.setItem('sc_user', userName);
+
+    // Clean hash from URL (prevents hash from staying in browser history)
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    // Trigger auto-sync
+    syncData();
+
+    return true;
+  }
+
+  // Check for OAuth errors
+  if (hash.has('oauth_error')) {
+    const errorMsg = hash.get('oauth_error');
+    showErrorBanner(errorMsg || 'Authorization failed. Please try again.');
+
+    // Clean hash from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    return false;
+  }
+
+  return false;
+}
+
+/**
+ * Show landing page (hide app)
+ */
+function showLandingPage() {
+  const app = document.getElementById('app');
+  if (app) {
+    app.style.display = 'none';
+  }
+
+  // Redirect to index.html if it exists, else show a message
+  if (document.location.pathname !== '/') {
+    window.location.href = '/';
+  }
+}
+
+/**
+ * Show app (hide landing page)
+ */
+function showApp() {
+  const app = document.getElementById('app');
+  if (app) {
+    app.style.display = 'flex';
+  }
+}
+
+/**
+ * Logout: clear tokens and return to landing page
+ */
+function logout() {
+  localStorage.removeItem('sc_at');
+  localStorage.removeItem('sc_ats');
+  localStorage.removeItem('sc_school');
+  localStorage.removeItem('sc_user');
+  localStorage.removeItem('lastSyncTime');
+
+  // Redirect to landing page
+  window.location.href = '/';
+}
+
+/**
+ * Show error banner in the app
+ */
+function showErrorBanner(message) {
+  // Create a simple alert banner if one doesn't exist
+  let banner = document.getElementById('error-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'error-banner';
+    banner.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(239,68,68,0.1); border-bottom: 1px solid rgba(239,68,68,0.2);
+      padding: 12px 16px; color: #FCA5A5; font-size: 13px;
+      text-align: center; display: flex; align-items: center; justify-content: space-between;
+    `;
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = 'background: none; border: none; color: #FCA5A5; cursor: pointer; font-size: 16px; padding: 0 8px;';
+    closeBtn.onclick = () => banner.remove();
+    banner.appendChild(document.createElement('span'));
+    banner.appendChild(closeBtn);
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+
+  banner.firstChild.textContent = message;
+  banner.style.display = 'flex';
+
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    if (banner && banner.parentNode) {
+      banner.remove();
+    }
+  }, 5000);
+}
+
+/**
+ * Sync data from Schoology API
+ */
+async function syncData() {
+  const accessToken = localStorage.getItem('sc_at');
+  const accessSecret = localStorage.getItem('sc_ats');
+  const school = localStorage.getItem('sc_school');
+
+  if (!accessToken || !accessSecret) {
+    console.warn('No tokens for sync');
+    return;
+  }
+
+  const syncBtn = document.getElementById('syncBtn');
+  const syncLabel = document.getElementById('syncLabel');
+  const syncSpinner = document.getElementById('syncSpinner');
+
+  // Show loading state
+  if (syncBtn) {
+    syncBtn.disabled = true;
+    syncBtn.classList.add('syncing');
+    if (syncLabel) syncLabel.textContent = 'Syncing...';
+    if (syncSpinner) syncSpinner.style.display = 'inline-block';
+  }
+
+  try {
+    const response = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_token: accessToken,
+        access_token_secret: accessSecret,
+        school: school || 'schoology.com',
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.ok && result.data) {
+      // Update DATA with fetched data
+      Object.assign(DATA, result.data);
+
+      // Store last sync time
+      localStorage.setItem('lastSyncTime', Date.now().toString());
+
+      // Re-render UI
+      renderToday();
+      renderWeek();
+      renderPlan();
+      renderGrades();
+
+      // Show success state
+      if (syncBtn) {
+        syncBtn.classList.remove('syncing');
+        syncBtn.classList.add('ok');
+        if (syncLabel) syncLabel.textContent = 'Synced';
+      }
+
+      setTimeout(() => {
+        if (syncBtn) {
+          syncBtn.disabled = false;
+          syncBtn.classList.remove('ok');
+          if (syncLabel) syncLabel.textContent = 'Sync';
+        }
+      }, 1500);
+    } else {
+      // Error response
+      const errorMsg = result.error || 'Failed to sync data.';
+      showErrorBanner(errorMsg);
+
+      // Show error state
+      if (syncBtn) {
+        syncBtn.classList.remove('syncing');
+        syncBtn.classList.add('err');
+      }
+
+      setTimeout(() => {
+        if (syncBtn) {
+          syncBtn.disabled = false;
+          syncBtn.classList.remove('err');
+          if (syncLabel) syncLabel.textContent = 'Sync';
+        }
+      }, 1500);
+    }
+  } catch (error) {
+    console.error('Sync error:', error);
+    showErrorBanner('Failed to sync. Check your internet connection.');
+
+    if (syncBtn) {
+      syncBtn.disabled = false;
+      syncBtn.classList.remove('syncing');
+      if (syncLabel) syncLabel.textContent = 'Sync';
+      if (syncSpinner) syncSpinner.style.display = 'none';
+    }
+  }
+}
+
+/**
+ * Initialize authentication on page load
+ */
+function initAuth() {
+  // First, handle OAuth callback (if tokens are in hash)
+  handleOAuthCallback();
+
+  // Then check if user is authenticated
+  if (isAuthenticated()) {
+    // User is logged in — show app
+    showApp();
+
+    // Update greeting with user's name if available
+    const userName = localStorage.getItem('sc_user');
+    const greeting = document.getElementById('greeting');
+    if (greeting && userName) {
+      greeting.textContent = `Hey, ${userName}`;
+    }
+
+    // Add logout button if not already present
+    addLogoutButton();
+  } else {
+    // User is not logged in — redirect to landing page
+    showLandingPage();
+  }
+}
+
+/**
+ * Add logout button to the app
+ */
+function addLogoutButton() {
+  // Check if logout button already exists
+  if (document.getElementById('logoutBtn')) return;
+
+  // Create logout button
+  const logoutBtn = document.createElement('button');
+  logoutBtn.id = 'logoutBtn';
+  logoutBtn.textContent = 'Logout';
+  logoutBtn.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: #e8e8e8;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 100;
+    transition: background 0.2s;
+  `;
+
+  logoutBtn.onmouseover = () => {
+    logoutBtn.style.background = 'rgba(255,255,255,0.15)';
+  };
+
+  logoutBtn.onmouseout = () => {
+    logoutBtn.style.background = 'rgba(255,255,255,0.1)';
+  };
+
+  logoutBtn.onclick = () => {
+    if (confirm('Are you sure you want to log out?')) {
+      logout();
+    }
+  };
+
+  // Add safe area inset for bottom
+  const safeBottom = getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom') || '0px';
+  logoutBtn.style.bottom = `calc(20px + ${safeBottom})`;
+
+  document.body.appendChild(logoutBtn);
+}
+
+/**
+ * Switch between tabs
+ */
+function showTab(tabName) {
+  // Hide all tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+
+  // Remove active from all nav buttons
+  document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.classList.remove('active');
+  });
+
+  // Show selected tab
+  const tab = document.getElementById(`tab-${tabName}`);
+  if (tab) {
+    tab.classList.add('active');
+  }
+
+  // Mark nav button as active
+  const navBtn = document.querySelector(`[data-tab="${tabName}"]`);
+  if (navBtn) {
+    navBtn.classList.add('active');
+  }
+}
 
 // ============================================================
 // DETAIL REGISTRY  (avoids fragile inline JS)
@@ -2987,10 +2590,47 @@ function makeDraggableWeekCol(container) {
 // ============================================================
 // INIT
 // ============================================================
+
+// Initialize authentication (check tokens, handle OAuth callback)
+initAuth();
+
+// Render UI
 renderToday();
 renderWeek();
 renderPlan();
 renderGrades();
+
+// Add event listeners for buttons
+const syncBtn = document.getElementById('syncBtn');
+if (syncBtn) {
+  syncBtn.addEventListener('click', syncData);
+}
+
+// Add event listeners for nav buttons
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tabName = this.getAttribute('data-tab');
+    showTab(tabName);
+  });
+});
+
+// Add event listeners for tab pills
+document.querySelectorAll('[data-plan]').forEach(pill => {
+  pill.addEventListener('click', function() {
+    const plan = this.getAttribute('data-plan');
+    const studyTab = document.getElementById('planStudy');
+    const catchupTab = document.getElementById('planCatchup');
+    document.querySelectorAll('[data-plan]').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    if (plan === 'study' && studyTab && catchupTab) {
+      studyTab.style.display = 'block';
+      catchupTab.style.display = 'none';
+    } else if (plan === 'catchup' && studyTab && catchupTab) {
+      studyTab.style.display = 'none';
+      catchupTab.style.display = 'block';
+    }
+  });
+});
 
 setInterval(renderTodayCols, 60000);
 setTimeout(()=>{
