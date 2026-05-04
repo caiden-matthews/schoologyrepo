@@ -18,7 +18,7 @@ A web app that lets any student at any Schoology-powered school connect their ac
 - **Frontend:** Vanilla JavaScript SPA (no framework, no bundler)
 - **Hosting:** Netlify static + serverless Functions
 - **Authentication:** Schoology OAuth 1.0a
-- **Data Storage:** Session-only (localStorage, no server-side database)
+- **Data Storage:** Phase 1: Session-only (localStorage) | Phase 2+: Server database + user accounts
 
 ## Getting Started
 
@@ -97,23 +97,25 @@ See `.planning/ROADMAP.md` and `.planning/codebase/ARCHITECTURE.md` for detailed
 
 ## Requirements & Roadmap
 
-**v1 Scope (current):**
+**Phase 1 (current):**
 - Multi-school OAuth (any Schoology student can connect)
 - All 5 tabs fully functional
 - Sync throttling (prevents rate limit abuse)
 - Security headers (CSP, HSTS)
+- Session-only storage (localStorage, no accounts)
 
-**v2 (future):**
+**Phase 2+ (planned):**
+- User accounts and server-side database
+- Persistent data storage across sessions/devices
 - Push notifications for upcoming deadlines
 - Study time analytics + grade trends
 - Multi-account support (one user, multiple schools)
 - Export to PDF/CSV
 
-**Out of Scope:**
-- Accounts / server-side storage (session-only for v1)
+**Out of Scope (v1 and beyond):**
 - Direct assignment submission to Schoology
 - Messaging / collaboration (use Schoology for this)
-- Support for other LMS platforms (Schoology only for v1)
+- Support for other LMS platforms (Schoology only)
 
 See `.planning/REQUIREMENTS.md` for the full list of 37 requirements.
 
