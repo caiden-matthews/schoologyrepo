@@ -148,10 +148,23 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
+    // Log error server-side for debugging, but show friendly message to user
+    console.error('Auth error:', err.message);
+
+    // Determine if error is network/domain related
+    const isDomainError = err.message.includes('ENOTFOUND') || err.message.includes('ERR_NAME_NOT_RESOLVED');
+    const friendlyError = isDomainError
+      ? 'Could not connect to Schoology. Please check your school name and internet connection.'
+      : 'Failed to connect to Schoology. Please try again.';
+
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'text/html' },
-      body: errorPage('OAuth error', `<pre>${err.message}</pre>`),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ok: false,
+        error: friendlyError,
+        details: err.message  // Include full error server-side for logs (visible in Network tab for now)
+      }),
     };
   }
 };

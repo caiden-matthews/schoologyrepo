@@ -709,7 +709,8 @@ function handleOAuthCallback() {
   // Check for OAuth errors
   if (hash.has('oauth_error')) {
     const errorMsg = hash.get('oauth_error');
-    showErrorBanner(errorMsg || 'Authorization failed. Please try again.');
+    // OAuth errors require starting the flow over from landing page, so no inline retry
+    showErrorBanner(errorMsg || 'Authorization failed. Please try again.', false);
 
     // Clean hash from URL
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -762,7 +763,7 @@ function logout() {
 /**
  * Show error banner in the app
  */
-function showErrorBanner(message) {
+function showErrorBanner(message, allowRetry = true) {
   // Create a simple alert banner if one doesn't exist
   let banner = document.getElementById('error-banner');
   if (!banner) {
@@ -773,25 +774,52 @@ function showErrorBanner(message) {
       background: rgba(239,68,68,0.1); border-bottom: 1px solid rgba(239,68,68,0.2);
       padding: 12px 16px; color: #FCA5A5; font-size: 13px;
       text-align: center; display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
     `;
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '✕';
-    closeBtn.style.cssText = 'background: none; border: none; color: #FCA5A5; cursor: pointer; font-size: 16px; padding: 0 8px;';
-    closeBtn.onclick = () => banner.remove();
-    banner.appendChild(document.createElement('span'));
-    banner.appendChild(closeBtn);
+    const textContainer = document.createElement('div');
+    textContainer.style.cssText = 'flex: 1; text-align: left;';
+    banner.appendChild(textContainer);
+    const btnContainer = document.createElement('div');
+    btnContainer.style.cssText = 'display: flex; gap: 8px; flex-shrink: 0; align-items: center;';
+    banner.appendChild(btnContainer);
     document.body.insertBefore(banner, document.body.firstChild);
   }
 
-  banner.firstChild.textContent = message;
+  const textContainer = banner.children[0];
+  const btnContainer = banner.children[1];
+
+  textContainer.textContent = message;
+  btnContainer.innerHTML = '';
+
+  if (allowRetry) {
+    const retryBtn = document.createElement('button');
+    retryBtn.textContent = 'Retry';
+    retryBtn.style.cssText = `
+      background: rgba(129,140,248,0.2); border: 1px solid rgba(129,140,248,0.4);
+      color: #A5B4FC; padding: 6px 12px; border-radius: 6px; font-size: 12px;
+      font-weight: 600; cursor: pointer; transition: background 0.2s;
+    `;
+    retryBtn.onmouseover = () => retryBtn.style.background = 'rgba(129,140,248,0.3)';
+    retryBtn.onmouseout = () => retryBtn.style.background = 'rgba(129,140,248,0.2)';
+    retryBtn.onclick = () => { banner.remove(); syncData(); };
+    btnContainer.appendChild(retryBtn);
+  }
+
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = 'background: none; border: none; color: #FCA5A5; cursor: pointer; font-size: 16px; padding: 0 8px;';
+  closeBtn.onclick = () => banner.remove();
+  btnContainer.appendChild(closeBtn);
+
   banner.style.display = 'flex';
 
-  // Auto-hide after 5 seconds
-  setTimeout(() => {
+  // Auto-hide after 6 seconds
+  clearTimeout(banner._timeout);
+  banner._timeout = setTimeout(() => {
     if (banner && banner.parentNode) {
       banner.remove();
     }
-  }, 5000);
+  }, 6000);
 }
 
 /**

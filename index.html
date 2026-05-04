@@ -255,13 +255,21 @@
           // Redirect to Schoology OAuth (response should have Location header)
           window.location.href = response.url || '/';
         } else {
-          const errorText = await response.text();
           let friendlyError = 'Failed to connect to Schoology. Please try again.';
 
-          if (response.status === 400) {
-            friendlyError = 'Invalid school name format. Please try again.';
-          } else if (response.status === 404) {
-            friendlyError = 'School not found. Check the spelling and try again.';
+          // Try to parse JSON error response
+          try {
+            const errorData = await response.json();
+            if (errorData.error) {
+              friendlyError = errorData.error;
+            }
+          } catch (e) {
+            // Fallback to status code based errors
+            if (response.status === 400) {
+              friendlyError = 'Invalid school name format. Please try again.';
+            } else if (response.status === 404) {
+              friendlyError = 'School not found. Check the spelling and try again.';
+            }
           }
 
           errorMessage.textContent = friendlyError;

@@ -125,7 +125,18 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    return htmlRedirect(SITE, 'oauth_error', err.message);
+    // Log error server-side for debugging
+    console.error('Callback error:', err.message);
+
+    // Return friendly error message to user
+    let friendlyError = 'Failed to complete login. Please try connecting again.';
+    if (err.message.includes('401') || err.message.includes('403')) {
+      friendlyError = 'Authorization failed. Please try connecting again.';
+    } else if (err.message.includes('404')) {
+      friendlyError = 'School not found or access denied. Check your school name and try again.';
+    }
+
+    return htmlRedirect(SITE, 'oauth_error', friendlyError);
   }
 };
 
