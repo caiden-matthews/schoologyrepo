@@ -9,8 +9,6 @@
 
 const crypto = require('crypto');
 
-const API_BASE = 'https://api.schoology.com/v1';
-
 // ── OAuth 1.0a helpers ────────────────────────────────────────────────────────
 function pct(s) { return encodeURIComponent(String(s ?? '')); }
 
@@ -38,8 +36,9 @@ function oauthHeader(method, url, consumerKey, consumerSecret, accessToken, acce
     .join(', ');
 }
 
-async function get(path, params, consumerKey, consumerSecret, accessToken, accessTokenSecret) {
-  let url = `${API_BASE}/${path.replace(/^\//, '')}`;
+async function get(path, params, consumerKey, consumerSecret, accessToken, accessTokenSecret, school = 'schoology.com') {
+  const apiBase = `https://api.${school}/v1`;
+  let url = `${apiBase}/${path.replace(/^\//, '')}`;
   if (params && Object.keys(params).length) {
     url += '?' + new URLSearchParams(params).toString();
   }
@@ -102,14 +101,14 @@ function parseDue(val) {
   return null;
 }
 
-function schoologyLink(sectionId, assignId) {
+function schoologyLink(sectionId, assignId, school = 'schoology.com') {
   if (sectionId && assignId)
-    return `https://schoology.shschools.org/course/${sectionId}/materials/gp/${assignId}`;
+    return `https://${school}/course/${sectionId}/materials/gp/${assignId}`;
   return '';
 }
 
 // ── Transform API results → app DATA ─────────────────────────────────────────
-function buildData(raw) {
+function buildData(raw, school = 'schoology.com') {
   const now      = new Date();
   const todayStr = now.toISOString().split('T')[0];
   const labels   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -138,7 +137,7 @@ function buildData(raw) {
     const title  = a.title || 'Assignment';
     const color  = courseColor(course);
     const abbrev = courseAbbrev(course);
-    const link   = schoologyLink(a.section_id, a.id);
+    const link   = schoologyLink(a.section_id, a.id, school);
 
     const item = { subject: abbrev, label: title, color, study: true, _synced: true, ...(link ? { link } : {}) };
 
@@ -228,6 +227,7 @@ exports.handler = async (event) => {
 
   const accessToken  = body.access_token;
   const accessSecret = body.access_token_secret;
+  const school       = (body.school || 'schoology.com').trim();
 
   if (!accessToken || !accessSecret) {
     return {
@@ -239,7 +239,7 @@ exports.handler = async (event) => {
 
   try {
     // Resolve user ID
-    const user = await get('/users/me', {}, KEY, SECRET, accessToken, accessSecret);
+    const user = await get('/users/me', {}, KEY, SECRET, accessToken, accessSecret, school);
     const uid  = String(user.uid || user.id || 'me');
     const userName = `${user.name_first || ''} ${user.name_last || ''}`.trim();
 
@@ -252,11 +252,11 @@ exports.handler = async (event) => {
         due_after:  now,
         due_before: now + 14 * 86400,
         limit: 100,
-      }, KEY, SECRET, accessToken, accessSecret),
+      }, KEY, SECRET, accessToken, accessSecret, school),
 
-      get(`/users/${uid}/grades`, {}, KEY, SECRET, accessToken, accessSecret),
+      get(`/users/${uid}/grades`, {}, KEY, SECRET, accessToken, accessSecret, school),
 
-      get(`/users/${uid}/updates`, { limit: 10 }, KEY, SECRET, accessToken, accessSecret),
+      get(`/users/${uid}/updates`, { limit: 10 }, KEY, SECRET, accessToken, accessSecret, school),
     ]);
 
     function unwrap(result, listKey) {
@@ -273,7 +273,7 @@ exports.handler = async (event) => {
       user:        userName,
     };
 
-    const data = buildData(raw);
+    const data = buildData(raw, school);
 
     return {
       statusCode: 200,
@@ -287,13 +287,22 @@ exports.handler = async (event) => {
 
   } catch (err) {
     const isAuthErr = err.message.includes('401') || err.message.includes('403');
+    const isDomainErr = err.message.includes('404');
+
+    let friendlyError = 'Failed to sync data from Schoology.';
+    if (isDomainErr) {
+      friendlyError = 'School not found or access denied. Check the domain and try connecting again.';
+    } else if (isAuthErr) {
+      friendlyError = 'Access denied. Make sure you authorized the app during login.';
+    }
+
     return {
-      statusCode: isAuthErr ? 401 : 500,
+      statusCode: isAuthErr ? 401 : (isDomainErr ? 404 : 500),
       headers: { ...cors, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ok:         false,
         needs_auth: isAuthErr,
-        error:      err.message,
+        error:      friendlyError,
       }),
     };
   }
