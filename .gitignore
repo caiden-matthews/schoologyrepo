@@ -5,3 +5,25 @@ node_modules/
 test-results/
 playwright-report/
 .DS_Store
+
+# Personal data files
+*.csv
+*.json
+!package.json
+!playwright.config.js
+!schoology_config.json.example
+
+# Personal scripts
+sync_server.py
+build_app.sh
+main.swift
+
+# Personal directories
+study_launch/
+__pycache__/
+.build/
+
+# IDE and build artifacts
+*.pyc
+*.swiftc
+*.o
