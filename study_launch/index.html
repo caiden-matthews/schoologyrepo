@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Study Planner - Sync your Schoology assignments and grades into one organized view">
+  <title>Study Planner - Organize Your Schoology Assignments</title>
+  <!-- AdSense script (Phase 3 placeholder; real ads after Phase 4 approval) -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #191919;
+      --card: #242424;
+      --accent: #818CF8;
+      --text: #e8e8e8;
+      --subtext: rgba(232, 232, 232, 0.42);
+      --border: rgba(255, 255, 255, 0.07);
+    }
+
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--subtext);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    /* ──── HERO SECTION ──── */
+    .hero {
+      padding: 60px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(129, 140, 248, 0.05) 100%);
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--subtext);
+      margin-bottom: 32px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      text-decoration: none;
+    }
+
+    .cta-button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .cta-button:active {
+      transform: translateY(0);
+      opacity: 0.8;
+    }
+
+    .cta-button.loading {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* ──── FEATURES SECTION ──── */
+    .section {
+      padding: 60px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 48px;
+      text-align: center;
+      letter-spacing: -0.8px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      background: rgba(129, 140, 248, 0.08);
+    }
+
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--subtext);
+      line-height: 1.6;
+    }
+
+    /* ──── DEMO SECTION ──── */
+    .demo-section {
+      background: rgba(129, 140, 248, 0.05);
+      padding: 60px 20px;
+    }
+
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 28px;
+      margin-top: 32px;
+    }
+
+    .screenshot-item {
+      text-align: center;
+    }
+
+    .screenshot-item img {
+      width: 100%;
+      max-width: 350px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .screenshot-caption {
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--subtext);
+      font-weight: 500;
+    }
+
+    /* ──── ABOUT SECTION ──── */
+    .about-section {
+      padding: 60px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .about-section h2 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 28px;
+      text-align: center;
+      letter-spacing: -0.6px;
+    }
+
+    .about-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .about-content p {
+      margin-bottom: 16px;
+    }
+
+    .about-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ──── FAQ SECTION ──── */
+    .faq-section {
+      padding: 60px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .faq-section h2 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 40px;
+      text-align: center;
+      letter-spacing: -0.6px;
+    }
+
+    .faq-item {
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .faq-question {
+      padding: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      transition: background 0.2s;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .faq-question:hover {
+      background: rgba(129, 140, 248, 0.1);
+    }
+
+    .faq-toggle {
+      display: inline-block;
+      transition: transform 0.2s;
+      font-size: 18px;
+    }
+
+    .faq-item.open .faq-toggle {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--subtext);
+    }
+
+    .faq-item.open .faq-answer {
+      padding: 18px;
+      max-height: 500px;
+    }
+
+    /* ──── FINAL CTA SECTION ──── */
+    .final-cta {
+      padding: 60px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(129, 140, 248, 0.05) 100%);
+    }
+
+    .final-cta h2 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: -0.6px;
+    }
+
+    .final-cta p {
+      font-size: 16px;
+      color: var(--subtext);
+      margin-bottom: 28px;
+    }
+
+    /* ──── FORM SECTION ──── */
+    .form-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--subtext);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .form-input::placeholder {
+      color: var(--subtext);
+    }
+
+    .form-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .form-submit:hover {
+      opacity: 0.9;
+    }
+
+    .form-submit:active {
+      transform: scale(0.98);
+      opacity: 0.8;
+    }
+
+    .form-error {
+      display: none;
+      padding: 14px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      color: #FCA5A5;
+      font-size: 13px;
+      margin-top: 12px;
+      border-left: 3px solid #EF4444;
+    }
+
+    .form-error.show {
+      display: block;
+    }
+
+    /* ──── FOOTER ──── */
+    footer {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .footer-links a {
+      color: var(--subtext);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-copyright {
+      font-size: 12px;
+      color: rgba(232, 232, 232, 0.3);
+    }
+
+    /* ──── RESPONSIVE ──── */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 40px 16px;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+        margin-bottom: 12px;
+      }
+
+      .hero p {
+        font-size: 16px;
+        margin-bottom: 24px;
+      }
+
+      .section {
+        padding: 40px 16px;
+      }
+
+      .section-title {
+        font-size: 28px;
+        margin-bottom: 32px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .feature-card {
+        padding: 20px;
+      }
+
+      .screenshots-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .about-section,
+      .faq-section {
+        padding: 40px 16px;
+      }
+
+      .about-section h2,
+      .faq-section h2 {
+        font-size: 24px;
+        margin-bottom: 24px;
+      }
+
+      .about-content {
+        padding: 20px;
+      }
+
+      .final-cta {
+        padding: 40px 16px;
+      }
+
+      .final-cta h2 {
+        font-size: 24px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 14px 16px;
+      }
+
+      .logo {
+        font-size: 16px;
+      }
+
+      .hero {
+        padding: 32px 16px;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .hero p {
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .cta-button {
+        padding: 12px 24px;
+        font-size: 14px;
+      }
+
+      .section {
+        padding: 32px 16px;
+      }
+
+      .section-title {
+        font-size: 22px;
+        margin-bottom: 24px;
+      }
+
+      .screenshot-item img {
+        max-width: 100%;
+      }
+
+      .form-section {
+        padding: 20px;
+      }
+
+      .footer-links {
+        gap: 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="logo">Study Planner</div>
+    <nav class="nav-links">
+      <a href="#about">About</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1>Your Schoology assignments, organized for you</h1>
+    <p>See your entire week at a glance. Sync your assignments automatically. Track your grades in one view.</p>
+    <button class="cta-button" id="heroCta">Connect Your Schoology Account</button>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="section">
+    <h2 class="section-title">Why Students Love Study Planner</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📅</span>
+        <h3>Today's Assignments</h3>
+        <p>See what's due today in a clean, distraction-free view. Never miss a deadline again.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Week Calendar View</h3>
+        <p>Plan your entire week at a glance. Visualize your workload and manage your time better.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⭐</span>
+        <h3>Grade Tracker</h3>
+        <p>Monitor your progress across all classes. See your GPA and stay on top of your grades.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⏱️</span>
+        <h3>Study Timer</h3>
+        <p>Built-in focus timer to help you study efficiently. Stay motivated and track study sessions.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📱</span>
+        <h3>Works Offline</h3>
+        <p>Your data is synced to your device. View assignments even when you're not connected.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔐</span>
+        <h3>Your Privacy First</h3>
+        <p>We never share your data. Your Schoology connection is direct and secure.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO SECTION -->
+  <section class="demo-section">
+    <div class="demo-container">
+      <h2 class="section-title">See It In Action</h2>
+      <div class="screenshots-grid">
+        <div class="screenshot-item">
+          <img src="/images/screenshot-today.png" alt="Today's Assignments view">
+          <p class="screenshot-caption">Today's Assignments</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="/images/screenshot-week.png" alt="This Week calendar view">
+          <p class="screenshot-caption">This Week Calendar</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="/images/screenshot-grades.png" alt="Grades Tracker view">
+          <p class="screenshot-caption">Grades Tracker</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section class="about-section" id="about">
+    <h2>Built for Students, by Students</h2>
+    <div class="about-content">
+      <p>Study Planner was created to solve a real problem: students using Schoology often feel overwhelmed by fragmented assignment information spread across the platform. Classes, due dates, and grades are hard to see at a glance.</p>
+      <p>We built Study Planner to give you one organized view of everything that matters—your assignments, deadlines, and grades. No clutter. No distractions. Just what you need to succeed.</p>
+      <p>Whether you're managing multiple classes, preparing for exams, or just trying to stay organized, Study Planner helps you take control of your academic life.</p>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="faq-section" id="faq">
+    <h2>Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>Is my data safe?</span>
+        <span class="faq-toggle">▼</span>
+      </div>
+      <div class="faq-answer">
+        Yes. We use industry-standard security (HTTPS encryption) to protect your data in transit. Your Schoology credentials are never stored by us—we only store the access token needed to sync your assignments and grades. You can disconnect at any time, and all data is immediately removed from our servers.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>Do you share my data with anyone?</span>
+        <span class="faq-toggle">▼</span>
+      </div>
+      <div class="faq-answer">
+        No. Your data is yours. We never share, sell, or give your assignment or grade information to anyone—including advertisers or third-party services. We only use your data to show you your own assignments and grades within the app.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>Why Schoology?</span>
+        <span class="faq-toggle">▼</span>
+      </div>
+      <div class="faq-answer">
+        Schoology is the platform used by millions of K–12 students, but it can be hard to navigate and organize your work. Study Planner gives you a cleaner, simpler interface designed specifically for students who want to stay organized and on top of their assignments.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>How does syncing work?</span>
+        <span class="faq-toggle">▼</span>
+      </div>
+      <div class="faq-answer">
+        When you first connect your Schoology account, Study Planner syncs all your assignments, grades, and calendar events. After that, you can manually sync anytime using the "Sync" button, or data updates automatically as you use the app. Syncing is fast and only takes a few seconds.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>Is Study Planner free?</span>
+        <span class="faq-toggle">▼</span>
+      </div>
+      <div class="faq-answer">
+        Yes! Study Planner is completely free to use. No hidden costs, no premium upgrades needed. We support the app through non-intrusive ads that help us keep the service running.
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA SECTION -->
+  <section class="final-cta">
+    <h2>Ready to organize your study plan?</h2>
+    <p>Get started in seconds. Your Schoology account is all you need.</p>
+    <button class="cta-button" id="finalCta">Connect Your Schoology Account</button>
+  </section>
+
+  <!-- FORM SECTION (Hidden, appears when CTA clicked) -->
+  <div class="section" style="display:none" id="formSection">
+    <div class="form-section">
+      <h3 style="margin-bottom: 24px; font-size: 22px; text-align: center;">Connect Your Schoology Account</h3>
+      <form id="authForm">
+        <div class="form-group">
+          <label class="form-label">School Domain</label>
+          <input
+            type="text"
+            class="form-input"
+            id="schoolInput"
+            placeholder="e.g., myschool (from myschool.schoology.com)"
+            autocomplete="off"
+          >
+        </div>
+        <button type="submit" class="form-submit" id="submitBtn">Connect Your Schoology</button>
+        <div class="form-error" id="errorBanner"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-links">
+      <a href="https://example.com/privacy">Privacy Policy</a>
+      <a href="https://example.com/terms">Terms of Service</a>
+      <a href="mailto:support@example.com">Contact</a>
+      <a href="#about">About</a>
+    </div>
+    <div class="footer-copyright">&copy; 2026 Study Planner. All rights reserved.</div>
+  </footer>
+
+  <script>
+    // Handle OAuth error from callback
+    function handleOAuthError() {
+      const hash = new URLSearchParams(window.location.hash.substring(1));
+      const error = hash.get('oauth_error');
+      if (error) {
+        showError(decodeURIComponent(error));
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
+    // Show form section
+    function showForm() {
+      document.getElementById('formSection').style.display = 'block';
+      document.getElementById('schoolInput').focus();
+      window.scrollTo({ top: document.getElementById('formSection').offsetTop - 100, behavior: 'smooth' });
+    }
+
+    // Show error message
+    function showError(message) {
+      const errorBanner = document.getElementById('errorBanner');
+      errorBanner.textContent = message;
+      errorBanner.classList.add('show');
+
+      // Auto-hide after 6 seconds
+      setTimeout(() => {
+        if (errorBanner.classList.contains('show')) {
+          errorBanner.classList.remove('show');
+        }
+      }, 6000);
+    }
+
+    // Clear error on input
+    document.getElementById('schoolInput').addEventListener('focus', () => {
+      const errorBanner = document.getElementById('errorBanner');
+      if (errorBanner.classList.contains('show')) {
+        errorBanner.classList.remove('show');
+      }
+    });
+
+    // Handle form submission
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const school = document.getElementById('schoolInput').value.trim();
+      const btn = document.getElementById('submitBtn');
+
+      if (!school) {
+        showError('Please enter your school domain.');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ school }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          showError(data.error || 'Failed to connect. Please try again.');
+          btn.classList.remove('loading');
+          btn.disabled = false;
+          return;
+        }
+
+        // auth.js redirects to Schoology, so we don't need to handle success here
+        // The redirect will happen automatically
+      } catch (err) {
+        console.error('[index] Auth error:', err);
+        showError('Network error. Check your internet and try again.');
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    });
+
+    // CTA button handlers
+    document.getElementById('heroCta').addEventListener('click', showForm);
+    document.getElementById('finalCta').addEventListener('click', showForm);
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', () => {
+        const faqItem = question.parentElement;
+        faqItem.classList.toggle('open');
+      });
+    });
+
+    // Handle OAuth errors on page load
+    handleOAuthError();
+  </script>
+</body>
+</html>
