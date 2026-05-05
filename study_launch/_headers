@@ -1,0 +1,22 @@
+/* Security headers for Study Planner app */
+
+/*
+  Content-Security-Policy-Report-Only (Phase 3): Non-enforced CSP for safe testing.
+  After 3–5 days with real users, switch to enforced Content-Security-Policy header.
+*/
+Content-Security-Policy-Report-Only: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src * data:; connect-src 'self' https://api.schoology.com https://pagead2.googlesyndication.com; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; report-uri https://your-domain/csp-report
+
+/* HSTS: Enforce HTTPS for 1 year, including subdomains */
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+/* X-Frame-Options: Prevent clickjacking by disallowing iframe embedding */
+X-Frame-Options: DENY
+
+/* X-Content-Type-Options: Prevent MIME-type sniffing attacks */
+X-Content-Type-Options: nosniff
+
+/* Referrer-Policy: Protect user privacy; send referrer only on same-origin requests */
+Referrer-Policy: strict-origin-when-cross-origin
+
+/* Permissions-Policy: Disable unused browser APIs (microphone, camera, geolocation) */
+Permissions-Policy: microphone=(), camera=(), geolocation=()
