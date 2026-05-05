@@ -1,0 +1,142 @@
+// netlify/functions/auth.js
+// Step 1 of Schoology OAuth: get a request token, set a short-lived cookie
+// with the request token secret, then redirect user to Schoology login.
+//
+// Env vars required (set in Netlify dashboard → Site settings → Environment):
+//   SCHOOLOGY_CONSUMER_KEY
+//   SCHOOLOGY_CONSUMER_SECRET
+
+const crypto = require('crypto');
+
+const REQUEST_TOKEN_URL = 'https://api.schoology.com/v1/oauth/request_token';
+const AUTHORIZE_URL     = 'https://app.schoology.com/oauth/authorize';
+
+// ── OAuth 1.0a helpers (pure Node, no npm deps) ───────────────────────────────
+function pct(s) { return encodeURIComponent(String(s ?? '')); }
+
+function oauthSign(method, url, params, consumerSecret, tokenSecret = '') {
+  const sorted = Object.keys(params).sort()
+    .map(k => `${pct(k)}=${pct(params[k])}`).join('&');
+  const base = `${method.toUpperCase()}&${pct(url)}&${pct(sorted)}`;
+  const key  = `${pct(consumerSecret)}&${pct(tokenSecret)}`;
+  return crypto.createHmac('sha1', key).update(base).digest('base64');
+}
+
+function oauthHeader(method, url, extra, consumerKey, consumerSecret, token = '', tokenSecret = '') {
+  const params = {
+    oauth_consumer_key:     consumerKey,
+    oauth_nonce:            crypto.randomBytes(16).toString('hex'),
+    oauth_signature_method: 'HMAC-SHA1',
+    oauth_timestamp:        Math.floor(Date.now() / 1000).toString(),
+    oauth_version:          '1.0',
+    ...extra,
+  };
+  if (token) params.oauth_token = token;
+
+  params.oauth_signature = oauthSign(method, url, params, consumerSecret, tokenSecret);
+
+  return 'OAuth ' + Object.keys(params)
+    .filter(k => k.startsWith('oauth_')).sort()
+    .map(k => `${pct(k)}="${pct(params[k])}"`)
+    .join(', ');
+}
+
+// ── Friendly error message mapping ────────────────────────────────────────────
+const errorMessages = {
+  'empty_domain': 'Please enter your school domain.',
+  'invalid_format': 'Invalid domain format. Try "myschool" (without .schoology.com).',
+  'missing_domain': 'School domain is required to connect.',
+  'network_error': 'Failed to reach Schoology. Check your internet and try again.',
+};
+
+// ── Handler ───────────────────────────────────────────────────────────────────
+exports.handler = async (event) => {
+  const KEY    = process.env.SCHOOLOGY_CONSUMER_KEY;
+  const SECRET = process.env.SCHOOLOGY_CONSUMER_SECRET;
+  const SITE   = process.env.URL || `https://${event.headers.host}`;
+
+  if (!KEY || !SECRET) {
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'text/html' },
+      body: errorPage('Missing environment variables',
+        'Set <code>SCHOOLOGY_CONSUMER_KEY</code> and <code>SCHOOLOGY_CONSUMER_SECRET</code> ' +
+        'in Netlify → Site settings → Environment variables.'
+      ),
+    };
+  }
+
+  const callbackUrl = `${SITE}/api/callback`;
+
+  try {
+    const header = oauthHeader(
+      'POST', REQUEST_TOKEN_URL,
+      { oauth_callback: callbackUrl },
+      KEY, SECRET
+    );
+
+    const resp = await fetch(REQUEST_TOKEN_URL, {
+      method: 'POST',
+      headers: { Authorization: header, Accept: 'application/x-www-form-urlencoded' },
+    });
+
+    if (!resp.ok) {
+      const body = await resp.text();
+      console.error(`[auth] Schoology request token endpoint returned ${resp.status}: ${body}`);
+      const statusCode = String(resp.status);
+      const friendlyMsg = errorMessages[statusCode] || errorMessages['network_error'];
+      return jsonError(friendlyMsg);
+    }
+
+    const parsed    = Object.fromEntries(new URLSearchParams(await resp.text()));
+    const reqToken  = parsed.oauth_token;
+    const reqSecret = parsed.oauth_token_secret;
+
+    if (!reqToken) {
+      console.error('[auth] No oauth_token in Schoology response');
+      return jsonError(errorMessages['network_error']);
+    }
+
+    // Store the request token secret in a short-lived HttpOnly cookie so the
+    // callback function can retrieve it without any server-side storage.
+    const cookie = [
+      `sc_rts=${encodeURIComponent(reqSecret)}`,
+      'Path=/',
+      'HttpOnly',
+      'SameSite=Lax',
+      'Max-Age=600',          // 10 minutes — plenty for the auth flow
+      ...(SITE.startsWith('https') ? ['Secure'] : []),
+    ].join('; ');
+
+    const authorizeUrl = `${AUTHORIZE_URL}?oauth_token=${encodeURIComponent(reqToken)}`;
+
+    return {
+      statusCode: 302,
+      headers: { Location: authorizeUrl, 'Set-Cookie': cookie },
+    };
+
+  } catch (err) {
+    console.error('[auth] Unexpected error:', err.message);
+    const friendlyMsg = errorMessages['network_error'];
+    return jsonError(friendlyMsg);
+  }
+};
+
+function jsonError(message) {
+  return {
+    statusCode: 400,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ error: message }),
+  };
+}
+
+function errorPage(title, body) {
+  return `<!DOCTYPE html><html><head><title>${title}</title>
+<style>body{font-family:system-ui;background:#191919;color:#e2e8f0;display:flex;
+align-items:center;justify-content:center;min-height:100vh;margin:0}
+.c{background:#242424;border-radius:14px;padding:40px;max-width:480px;
+border:1px solid rgba(255,255,255,.08)}h2{color:#f87171}pre{background:#111;
+padding:12px;border-radius:8px;font-size:12px;color:#f87171;overflow:auto}
+code{background:#111;padding:2px 6px;border-radius:4px;font-size:12px}</style>
+</head><body><div class="c"><h2>${title}</h2>${body}</div></body></html>`;
+}
