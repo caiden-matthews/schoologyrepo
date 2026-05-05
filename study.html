@@ -1413,11 +1413,21 @@ function runSync() {
       // Update user name if returned
       if (resp.data.user) localStorage.setItem('sc_user', resp.data.user);
       mergeSchoologyData(resp.data);
-      renderAll();
-      btn.className = 'sync-btn ok';
-      lbl.textContent = resp.msg || 'Synced';
-      clearTimeout(_syncTimeout);
-      _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 2500);
+      // Restore custom events from backend alongside Schoology data
+      restoreCustomEventsFromBackend().then(() => {
+        renderAll();
+        btn.className = 'sync-btn ok';
+        lbl.textContent = resp.msg || 'Synced';
+        clearTimeout(_syncTimeout);
+        _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 2500);
+      }).catch(() => {
+        // If backend restore fails, still render with localStorage fallback
+        renderAll();
+        btn.className = 'sync-btn ok';
+        lbl.textContent = resp.msg || 'Synced';
+        clearTimeout(_syncTimeout);
+        _syncTimeout = setTimeout(() => { btn.className = 'sync-btn'; checkSyncStatus(); }, 2500);
+      });
     } else if (resp.needs_auth) {
       // Token expired — clear and re-auth
       localStorage.removeItem('sc_at');
@@ -1965,9 +1975,153 @@ function saveCustomEvent() {
   const arr = getCustomEvents();
   arr.push(ev);
   saveCustomEvents(arr);
+  syncCustomEventToBackend('create', ev);
 
   closeModal('addEventModal');
   renderWeek(); // refresh
+}
+
+// ============================================================
+// BACKEND SYNC FOR CUSTOM EVENTS
+// ============================================================
+/**
+ * Sync custom event to backend (create or delete)
+ * Runs optimistically: saves to localStorage immediately, syncs in background
+ * If sync fails, user sees friendly error but event remains in localStorage
+ */
+function syncCustomEventToBackend(action, event) {
+  const token = _scToken();
+  if (!token) {
+    console.warn('[custom-events] Not authenticated, skipping backend sync');
+    return;
+  }
+
+  // Build request based on action
+  let method, url, body;
+
+  if (action === 'create') {
+    method = 'POST';
+    url = '/api/custom-events';
+    body = {
+      title: event.title,
+      event_date: event.date,
+      time_val: event.timeVal,
+      time_display: event.timeDisplay,
+      subject: event.subject,
+      event_type: event.type,
+      note: event.note,
+    };
+  } else if (action === 'delete') {
+    method = 'DELETE';
+    url = '/api/custom-events';
+    body = { event_id: event.id };
+  } else {
+    console.warn(`[custom-events] Unknown action: ${action}`);
+    return;
+  }
+
+  // Fire-and-forget: sync in background without blocking UI
+  fetch(url, {
+    method,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then(resp => {
+      if (resp.success) {
+        console.log(`[custom-events] Event synced: ${action} successful`);
+      } else {
+        console.warn(`[custom-events] Sync failed: ${resp.error}`);
+      }
+    })
+    .catch(err => {
+      console.error(`[custom-events] Sync error (${action}):`, err);
+      // Log warning: event saved locally even if sync to backend failed
+      console.warn(`[custom-events] ${action} succeeded locally but failed to sync to backend`);
+    });
+}
+
+/**
+ * Restore custom events from backend on page load
+ * Merges backend events with localStorage, preferring backend as source of truth
+ * If backend is unavailable, falls back to localStorage
+ */
+async function restoreCustomEventsFromBackend() {
+  const token = _scToken();
+  if (!token) {
+    console.log('[custom-events] Not authenticated, skipping backend restore');
+    return;
+  }
+
+  try {
+    const resp = await fetch('/api/custom-events', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!resp.ok) {
+      console.warn(`[custom-events] Backend restore failed: HTTP ${resp.status}`);
+      // Fall back to localStorage
+      return;
+    }
+
+    const data = await resp.json();
+    if (!data.success || !Array.isArray(data.events)) {
+      console.warn('[custom-events] Invalid backend response');
+      return;
+    }
+
+    // Transform backend events to match frontend schema
+    // Backend stores: id, user_id, title, event_date, time_val, time_display, subject, event_type, note, created_at, updated_at
+    // Frontend expects: id, date, timeVal, timeDisplay, title, subject, type, note, custom
+    const backendEvents = data.events.map(ev => ({
+      id: ev.id,
+      date: ev.event_date,
+      timeVal: ev.time_val || '',
+      timeDisplay: ev.time_display || '',
+      title: ev.title,
+      subject: ev.subject || null,
+      type: ev.event_type || 'homework',
+      note: ev.note || '',
+      custom: true,
+      synced: true, // Mark as synced from backend
+    }));
+
+    // Get localStorage events
+    const localEvents = getCustomEvents();
+
+    // Merge: backend is source of truth, remove duplicates
+    // Key: (date, title, subject) — if same event exists in both, use backend version
+    const merged = [...backendEvents];
+    const backendKeys = new Set(
+      backendEvents.map(e => `${e.date}|${e.title}|${e.subject}`)
+    );
+
+    localEvents.forEach(local => {
+      const key = `${local.date}|${local.title}|${local.subject}`;
+      if (!backendKeys.has(key)) {
+        // Local event not in backend — add it (maybe not synced yet)
+        merged.push(local);
+      }
+    });
+
+    // Update localStorage with merged events
+    saveCustomEvents(merged);
+    console.log(`[custom-events] Restored ${backendEvents.length} events from backend`);
+
+  } catch (err) {
+    console.error('[custom-events] Backend restore error:', err);
+    // Fall back to localStorage silently
+  }
 }
 
 // ============================================================
