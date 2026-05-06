@@ -23,7 +23,7 @@
     }
 
     html, body {
-      height: 100%;
+      min-height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
@@ -31,14 +31,21 @@
 
     body {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 20px;
+      padding: 40px 20px 80px;
+    }
+
+    .page-root {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
     }
 
     .landing-container {
       width: 100%;
-      max-width: 420px;
     }
 
     .landing-header {
@@ -165,6 +172,619 @@
       to { transform: rotate(360deg); }
     }
 
+    .scroll-hint {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+      animation: bounce 1.8s ease-in-out infinite;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .scroll-hint.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scroll-hint-chevron {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--subtext);
+    }
+
+    .scroll-hint-chevron::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    /* About Section */
+    .about-section {
+      padding-top: 40px;
+      width: 100%;
+    }
+
+    .about-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 32px 0;
+    }
+
+    .about-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .about-headline {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .about-sub {
+      font-size: 14px;
+      color: var(--subtext);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 560px) {
+      .feature-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(129,140,248,0.3);
+    }
+
+    .feature-card-wide {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    @media (max-width: 559px) {
+      .feature-card-wide {
+        flex-direction: column;
+      }
+    }
+
+    .feature-mockup {
+      flex-shrink: 0;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .feature-copy {
+      padding: 14px 16px 16px;
+    }
+
+    .feature-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 5px;
+      letter-spacing: -0.2px;
+    }
+
+    .feature-desc {
+      font-size: 12px;
+      color: var(--subtext);
+      line-height: 1.55;
+    }
+
+    /* Mockup: Today */
+    .mockup-today {
+      width: 100%;
+      height: 130px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mockup-today-header {
+      grid-column: 1 / -1;
+      font-size: 8px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .mockup-today-col {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mockup-col-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      border-left: 3px solid;
+      padding-left: 6px;
+      font-size: 9px;
+      line-height: 1.2;
+    }
+
+    .mockup-col-item.class-1 {
+      border-color: #3B82F6;
+    }
+
+    .mockup-col-item.class-2 {
+      border-color: #10B981;
+    }
+
+    .mockup-col-item.study {
+      border-color: var(--accent);
+      background: rgba(129,140,248,0.1);
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(129,140,248,0.2);
+      border-left: 2px solid var(--accent);
+    }
+
+    .mockup-item-title {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .mockup-item-time {
+      font-size: 8px;
+      color: var(--subtext);
+    }
+
+    .mockup-time-now {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 2px 0;
+      font-size: 8px;
+      color: #F87171;
+      margin-bottom: 4px;
+    }
+
+    .mockup-time-now-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #F87171;
+    }
+
+    .mockup-time-now-line {
+      height: 1.5px;
+      background: #F87171;
+      flex: 1;
+    }
+
+    /* Mockup: Week */
+    .mockup-week {
+      width: 100%;
+      height: 110px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .mockup-day-col {
+      flex-shrink: 0;
+      width: 52px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mockup-day-col.today {
+      background: rgba(129,140,248,0.08);
+      border-color: rgba(129,140,248,0.4);
+    }
+
+    .mockup-day-label {
+      font-size: 8px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      letter-spacing: 0.4px;
+    }
+
+    .mockup-day-num {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .mockup-day-col.today .mockup-day-num {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      margin: 2px 0;
+    }
+
+    .mockup-day-item {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    .mockup-day-item.class {
+      background: #3B82F6;
+    }
+
+    .mockup-day-item.study {
+      background: var(--accent);
+    }
+
+    /* Mockup: Plan */
+    .mockup-plan {
+      width: 100%;
+      height: 110px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mockup-plan-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .mockup-badge {
+      display: inline-block;
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.16);
+      color: #FCD34D;
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .mockup-session-row {
+      display: grid;
+      grid-template-columns: 35px 1fr;
+      gap: 6px;
+      align-items: center;
+      font-size: 9px;
+    }
+
+    .mockup-session-label {
+      color: var(--subtext);
+      font-weight: 600;
+    }
+
+    .mockup-session-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 6px;
+      color: var(--text);
+      font-size: 9px;
+      line-height: 1.3;
+    }
+
+    /* Mockup: Grades */
+    .mockup-grades {
+      width: 100%;
+      height: 110px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mockup-grade-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .mockup-grade-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    .mockup-grade-card.grade-a::before {
+      background: #4ADE80;
+    }
+
+    .mockup-grade-card.grade-b::before {
+      background: #3B82F6;
+    }
+
+    .mockup-grade-card.grade-c::before {
+      background: #F59E0B;
+    }
+
+    .mockup-grade-card.grade-d::before {
+      background: #818CF8;
+    }
+
+    .mockup-grade-subject {
+      font-size: 8px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .mockup-grade-letter {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .mockup-grade-letter.grade-a {
+      color: #4ADE80;
+    }
+
+    .mockup-grade-letter.grade-b {
+      color: #3B82F6;
+    }
+
+    .mockup-grade-letter.grade-c {
+      color: #F59E0B;
+    }
+
+    .mockup-grade-letter.grade-d {
+      color: #818CF8;
+    }
+
+    .mockup-grade-percent {
+      font-size: 10px;
+      color: var(--subtext);
+    }
+
+    /* Mockup: Timer */
+    .mockup-timer {
+      width: 160px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .mockup-timer-ring {
+      width: 100px;
+      height: 100px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mockup-timer-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .mockup-timer-display {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .mockup-timer-time {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .mockup-timer-label {
+      font-size: 8px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .mockup-timer-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mockup-timer-btn {
+      font-size: 8px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    .mockup-timer-btn.play {
+      background: var(--accent);
+      color: white;
+    }
+
+    .mockup-timer-btn.reset {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Mockup: Guide */
+    .mockup-guide {
+      width: 200px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(129,140,248,0.06);
+      border: 1px solid rgba(129,140,248,0.15);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    @media (max-width: 559px) {
+      .mockup-guide {
+        width: 100%;
+      }
+    }
+
+    .mockup-guide-header {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+    }
+
+    .mockup-guide-label {
+      font-size: 8px;
+      text-transform: uppercase;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    .mockup-guide-title {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .mockup-guide-bullet {
+      font-size: 8px;
+      color: var(--subtext);
+      line-height: 1.3;
+      display: flex;
+      gap: 4px;
+    }
+
+    .mockup-guide-bullet::before {
+      content: '•';
+      flex-shrink: 0;
+    }
+
+    .mockup-guide-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .mockup-guide-tag {
+      font-size: 7px;
+      background: rgba(129,140,248,0.13);
+      color: #A5B4FC;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .about-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--subtext);
+      margin-top: 28px;
+      line-height: 1.5;
+    }
+
+    .about-footer-icon {
+      margin-right: 4px;
+    }
+
+    @media (min-width: 900px) {
+      .page-root {
+        max-width: 1000px;
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 60px;
+        align-items: start;
+      }
+
+      .landing-container {
+        position: sticky;
+        top: 40px;
+      }
+
+      .about-section {
+        padding-top: 0;
+      }
+
+      .about-divider {
+        display: none;
+      }
+
+      .feature-card-wide {
+        flex-direction: row;
+      }
+
+      .mockup-timer {
+        margin-right: 16px;
+      }
+
+      .feature-card-wide .feature-copy {
+        flex: 1;
+        padding: 14px 16px;
+      }
+    }
+
     @media (max-width: 480px) {
       .landing-headline {
         font-size: 24px;
@@ -173,39 +793,225 @@
       .landing-subtext {
         font-size: 13px;
       }
+
+      .about-headline {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="landing-container">
-    <div class="landing-header">
-      <h1 class="landing-headline">Better view of your Schoology assignments</h1>
-      <p class="landing-subtext">Sign in with your school's Schoology account to see your assignments and grades.</p>
-    </div>
-
-    <div id="error-banner" class="error-container">
-      <span class="error-dismiss" onclick="document.getElementById('error-banner').classList.remove('show');">✕</span>
-      <span id="error-message"></span>
-    </div>
-
-    <form id="connect-form" onsubmit="handleFormSubmit(event)">
-      <div class="form-group">
-        <label class="form-label" for="school-input">School Name</label>
-        <input
-          id="school-input"
-          class="school-input"
-          type="text"
-          placeholder="e.g., myschool"
-          autocomplete="off"
-          aria-label="School name"
-        >
-        <p class="input-hint">Don't include .schoology.com</p>
+  <div class="page-root">
+    <div class="landing-container">
+      <div class="landing-header">
+        <h1 class="landing-headline">Better view of your Schoology assignments</h1>
+        <p class="landing-subtext">Sign in with your school's Schoology account to see your assignments and grades.</p>
       </div>
 
-      <button id="connect-btn" class="connect-button" type="submit">
-        <span id="btn-text">Connect Schoology</span>
-      </button>
-    </form>
+      <div id="error-banner" class="error-container">
+        <span class="error-dismiss" onclick="document.getElementById('error-banner').classList.remove('show');">✕</span>
+        <span id="error-message"></span>
+      </div>
+
+      <form id="connect-form" onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+          <label class="form-label" for="school-input">School Name</label>
+          <input
+            id="school-input"
+            class="school-input"
+            type="text"
+            placeholder="e.g., myschool"
+            autocomplete="off"
+            aria-label="School name"
+          >
+          <p class="input-hint">Don't include .schoology.com</p>
+        </div>
+
+        <button id="connect-btn" class="connect-button" type="submit">
+          <span id="btn-text">Connect Schoology</span>
+        </button>
+      </form>
+
+      <div class="scroll-hint">
+        <div class="scroll-hint-chevron"></div>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <div class="about-divider"></div>
+      <div class="about-eyebrow">What you get</div>
+      <h2 class="about-headline">Built for students who actually use Schoology.</h2>
+      <p class="about-sub">Connect once — see your day, your week, your study plan, and your grades all in one place.</p>
+
+      <div class="feature-grid">
+        <!-- Today -->
+        <div class="feature-card">
+          <div class="feature-mockup mockup-today">
+            <div class="mockup-today-header">
+              <span>During the Day</span>
+              <span>Study/Work</span>
+            </div>
+            <div class="mockup-time-now">
+              <div class="mockup-time-now-dot"></div>
+              <div class="mockup-time-now-line"></div>
+              <span>Now</span>
+            </div>
+            <div class="mockup-today-col">
+              <div class="mockup-col-item class-1">
+                <div class="mockup-item-title">Calc</div>
+                <div class="mockup-item-time">10:30 AM</div>
+              </div>
+              <div class="mockup-col-item class-2">
+                <div class="mockup-item-title">Biology</div>
+                <div class="mockup-item-time">1:00 PM</div>
+              </div>
+            </div>
+            <div class="mockup-today-col">
+              <div class="mockup-col-item study">
+                <div class="mockup-item-title">Essay prep</div>
+                <div class="mockup-item-time">45 min</div>
+              </div>
+            </div>
+          </div>
+          <div class="feature-copy">
+            <div class="feature-title">Today, at a glance</div>
+            <div class="feature-desc">Classes and study blocks side-by-side with a live time indicator. No more guessing what's next.</div>
+          </div>
+        </div>
+
+        <!-- Week -->
+        <div class="feature-card">
+          <div class="feature-mockup mockup-week">
+            <div class="mockup-day-col today">
+              <div class="mockup-day-label">Mon</div>
+              <div class="mockup-day-num">14</div>
+              <div class="mockup-day-item class"></div>
+            </div>
+            <div class="mockup-day-col">
+              <div class="mockup-day-label">Tue</div>
+              <div class="mockup-day-num">15</div>
+              <div class="mockup-day-item class"></div>
+              <div class="mockup-day-item study"></div>
+            </div>
+            <div class="mockup-day-col">
+              <div class="mockup-day-label">Wed</div>
+              <div class="mockup-day-num">16</div>
+              <div class="mockup-day-item study"></div>
+            </div>
+            <div class="mockup-day-col">
+              <div class="mockup-day-label">Thu</div>
+              <div class="mockup-day-num">17</div>
+              <div class="mockup-day-item class"></div>
+            </div>
+          </div>
+          <div class="feature-copy">
+            <div class="feature-title">Your full week in one scroll</div>
+            <div class="feature-desc">A 7-day calendar showing every class, assignment, and study session without switching apps.</div>
+          </div>
+        </div>
+
+        <!-- Plan -->
+        <div class="feature-card">
+          <div class="feature-mockup mockup-plan">
+            <div>
+              <div class="mockup-plan-title">AP Chemistry Lab Report</div>
+              <div class="mockup-badge">Due in 3 days</div>
+            </div>
+            <div class="mockup-session-row">
+              <div class="mockup-session-label">Mon</div>
+              <div class="mockup-session-bar">Read Ch 4–6, outline key terms</div>
+            </div>
+            <div class="mockup-session-row">
+              <div class="mockup-session-label">Tue</div>
+              <div class="mockup-session-bar">Complete practice problems</div>
+            </div>
+          </div>
+          <div class="feature-copy">
+            <div class="feature-title">Multi-day study plans, automatically</div>
+            <div class="feature-desc">Prep plans spread across free days + Catch-up tab for missed work.</div>
+          </div>
+        </div>
+
+        <!-- Grades -->
+        <div class="feature-card">
+          <div class="feature-mockup mockup-grades">
+            <div class="mockup-grade-card grade-a">
+              <div class="mockup-grade-subject">Math</div>
+              <div class="mockup-grade-letter grade-a">A</div>
+              <div class="mockup-grade-percent">97.4%</div>
+            </div>
+            <div class="mockup-grade-card grade-b">
+              <div class="mockup-grade-subject">English</div>
+              <div class="mockup-grade-letter grade-b">B+</div>
+              <div class="mockup-grade-percent">88.1%</div>
+            </div>
+            <div class="mockup-grade-card grade-c">
+              <div class="mockup-grade-subject">Chemistry</div>
+              <div class="mockup-grade-letter grade-c">B</div>
+              <div class="mockup-grade-percent">84.3%</div>
+            </div>
+            <div class="mockup-grade-card grade-d">
+              <div class="mockup-grade-subject">History</div>
+              <div class="mockup-grade-letter grade-d">A−</div>
+              <div class="mockup-grade-percent">91.7%</div>
+            </div>
+          </div>
+          <div class="feature-copy">
+            <div class="feature-title">Live grade cards</div>
+            <div class="feature-desc">Letter grade, percentage, and alert when an assignment drags your grade down.</div>
+          </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="feature-card feature-card-wide">
+          <div class="feature-mockup mockup-timer">
+            <div class="mockup-timer-ring">
+              <svg class="mockup-timer-svg" viewBox="0 0 100 100" style="transform: rotate(-90deg)">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="83 125" stroke-linecap="round"/>
+              </svg>
+              <div class="mockup-timer-display">
+                <div class="mockup-timer-time">18:32</div>
+                <div class="mockup-timer-label">Remaining</div>
+              </div>
+            </div>
+            <div class="mockup-timer-buttons">
+              <button class="mockup-timer-btn play">Pause</button>
+              <button class="mockup-timer-btn reset">Reset</button>
+            </div>
+          </div>
+          <div class="feature-copy">
+            <div class="feature-title">Focus Timer</div>
+            <div class="feature-desc">Circular countdown started directly from any assignment in your plan. Lock in and eliminate distractions.</div>
+          </div>
+        </div>
+
+        <!-- Guide -->
+        <div class="feature-card feature-card-wide">
+          <div class="feature-mockup mockup-guide">
+            <div class="mockup-guide-header">
+              <span class="mockup-guide-label">Study Guide</span>
+              <span class="mockup-guide-title">AP Chem · Titration</span>
+            </div>
+            <div class="mockup-guide-bullet">Key concept: pH indicators change color at the equivalence point</div>
+            <div class="mockup-guide-bullet">Formula: moles = Molarity × Volume (L)</div>
+            <div class="mockup-guide-bullet">Practice Q: What is the endpoint of a titration?</div>
+            <div class="mockup-guide-tags">
+              <span class="mockup-guide-tag">Flashcards (12)</span>
+              <span class="mockup-guide-tag">5 Practice Qs</span>
+            </div>
+          </div>
+          <div class="feature-copy">
+            <div class="feature-title">AI Study Guides</div>
+            <div class="feature-desc">Flashcards and practice questions for any assignment in seconds, tailored to the material on your Schoology page.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-footer">
+        <span class="about-footer-icon">🔒</span>Works with any school that uses Schoology. No data is stored beyond your session.
+      </div>
+    </div>
   </div>
 
   <script>
@@ -292,6 +1098,24 @@
       if (pending) {
         document.getElementById('school-input').value = pending;
         document.getElementById('school-input').focus();
+      }
+
+      // Scroll hint fade-out when about section enters viewport
+      const aboutSection = document.querySelector('.about-section');
+      const scrollHint = document.querySelector('.scroll-hint');
+
+      if (aboutSection && scrollHint) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              scrollHint.classList.add('hidden');
+            } else {
+              scrollHint.classList.remove('hidden');
+            }
+          });
+        }, { threshold: 0.1 });
+
+        observer.observe(aboutSection);
       }
     });
   </script>
