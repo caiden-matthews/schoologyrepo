@@ -30,9 +30,10 @@ A web app that lets any student at any Schoology-powered school connect their ac
 ### For Users
 
 1. Visit the live site (URL coming soon)
-2. Enter your school's Schoology domain (e.g., `myschool.schoology.com`)
-3. Click "Connect Schoology" and authorize
-4. Your data syncs automatically — no additional setup
+2. On the login page, scroll down to see what the app does (feature showcase with mockups)
+3. Enter your school's Schoology domain (e.g., `myschool.schoology.com`)
+4. Click "Connect Schoology" and authorize
+5. Your data syncs automatically — no additional setup
 
 ### For Developers
 
@@ -85,7 +86,7 @@ Set these in your Netlify dashboard (Site settings → Build & deploy → Enviro
 .
 ├── study.html              # Main SPA (all UI, state, styling inline)
 ├── city.html               # Alternate standalone page (same design system)
-├── index.html              # Landing page (coming soon)
+├── index.html              # Login + about page with feature showcase mockups
 ├── netlify/
 │   ├── functions/
 │   │   ├── auth.js         # Step 1: OAuth request token
@@ -184,5 +185,6 @@ Questions or issues? Open an issue on GitHub or email support (coming soon).
 
 ---
 
-**Last updated:** 2026-05-04  
-**Status:** Phase 2.5 complete — Custom event backend sync via Supabase ready for deployment
+**Last updated:** 2026-05-06  
+**Status:** Phase 2.5 complete — Custom event backend sync via Supabase ready for deployment  
+**Latest:** Login page now includes feature showcase with CSS mockups of all 6 app features
